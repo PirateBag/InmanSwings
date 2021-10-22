@@ -22,7 +22,8 @@ public class Entrypoint
     public void run(String... args) {
         LOG.info("EXECUTING : command line runner");
         System.setProperty("java.awt.headless", "false"); 
-        FirstExample.run( args );
+        // FirstExample.run( args );
+        FirstExample.secondExample();
  
         for (int i = 0; i < args.length; ++i) {
             LOG.info("args[{}]: {}", i, args[i]);
