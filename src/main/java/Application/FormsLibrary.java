@@ -3,7 +3,6 @@ package Application;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Optional;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -21,6 +20,7 @@ public class FormsLibrary {
 	public static JPanel login;
 	public static JPanel empty;
 	public static JPanel itemQuery;
+	public static JPanel itemPropertyPanel;
 	
 	public FormsLibrary( ) {
 	}

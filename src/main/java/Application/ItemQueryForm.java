@@ -3,25 +3,19 @@ package Application;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Optional;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
-
-import org.springframework.http.ResponseEntity;
+import javax.swing.table.DefaultTableModel;
 
 import com.inman.business.QueryParameterException;
-import com.inman.model.Item;
-import com.inman.model.User;
 import com.inman.model.rest.ItemResponse;
 import com.inman.model.rest.SearchItemRequest;
-import com.inman.model.rest.StatusResponse;
-import com.inman.model.rest.VerifyCredentialsRequest;
-import com.inman.model.rest.VerifyCredentialsResponse;
 
 public class ItemQueryForm {
 	private static JPanel itemQuery;
@@ -42,15 +36,10 @@ public class ItemQueryForm {
 		
 		JTextField itemId = Utility.createTextField( "Item Id" );
 		itemQueryPanel.add( itemId );
-		itemQueryPanel.add( Utility.labelMaker("or", JLabel.TRAILING),
-				BorderLayout.LINE_START  );
 
 		JTextField summaryId = Utility.createTextField( "Summary Id" );
 		itemQueryPanel.add( summaryId );
 
-		itemQueryPanel.add( Utility.labelMaker("or", JLabel.TRAILING),
-				BorderLayout.LINE_START  );
-		
 		JTextField description = Utility.createTextField( "Description" );
 		itemQueryPanel.add( description );
 
@@ -60,14 +49,31 @@ public class ItemQueryForm {
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout( new BoxLayout( buttonPanel, BoxLayout.X_AXIS ) );
 
-		JTextArea itemSummary = new JTextArea();
-		itemQueryPanel.add( itemSummary );
+		var searchButton = new JButton( "Search");
+		buttonPanel.add( searchButton);
+
+		var exitButton = new JButton( "Exit");
+		buttonPanel.add( exitButton );
 		
-		var button = new JButton( "Search");
-		button.addActionListener( new ActionListener() {
+		var addButton = new JButton( "Add" );
+		buttonPanel.add( addButton );
+		itemQueryPanel.add( buttonPanel );
+
+		itemQueryPanel.add( Utility.labelMaker(" ", JLabel.TRAILING),
+				BorderLayout.LINE_START  );
+		
+		DefaultTableModel tableModel = new DefaultTableModel();
+		JTable queryResults = new JTable( tableModel );
+		String [] columnNames = { "id", "Summary Id", "Description" };
+		for (String columnName : columnNames ) {
+			tableModel.addColumn( columnName );
+		}
+		queryResults.setFillsViewportHeight(true);
+		itemQueryPanel.add( new JScrollPane( queryResults) );
+			
+		searchButton.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
 				try {
 					SearchItemRequest searchItemRequest = new SearchItemRequest(
 						itemId.getText(), summaryId.getText(), description.getText() );
@@ -75,32 +81,31 @@ public class ItemQueryForm {
 					String completeUrl = "http://localhost:8080/" + SearchItemRequest.queryUrl;
 					ItemResponse responsePackage = Main.restTemplate.postForObject( completeUrl, searchItemRequest, ItemResponse.class );
 					
-					StringBuffer itemAsString = new StringBuffer();
-					for ( Item queryResult : responsePackage.getData() ) {
-						itemAsString.append( queryResult.getId() + " | " + queryResult.getSummaryId() + " | " + queryResult.getDescription() + "\n" );
-					}
-					itemSummary.setText( itemAsString.toString() );
 					errorMessage.setText( "" );
+					
+					var numRows = responsePackage.getData().length;
+					
+					for ( int row = 0; row < numRows ; row++ ) {
+						var item = responsePackage.getData()[ row ];
+						tableModel.insertRow( row, new Object[] { item.getId(), item.getSummaryId(), item.getDescription() } );
+					}
 				} catch (QueryParameterException qfe ) {
 					errorMessage.setText( qfe.getMessage() );
 				} catch ( Exception e1 ) {
 					errorMessage.setText( e1.getMessage() );
 				}
-				/*
-				ScreenStateService.refreshServer();
-				if ( ScreenStateService.isServerConnected() ) {
-					ScreenStateService.evaluate(
-							new Action( "login", ScreenTransitionType.REPLACE, FormsLibrary.empty ) );
-				}*/
+			}
+		} );
+		
+		addButton.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ScreenStateService.evaluate(
+						new Action( "itemAdd", ScreenTransitionType.REPLACE, ItemPropertiesForm.getItemProperties( ) ) );
 
 			}
 		} );  
 
-		buttonPanel.add(button);
-
-		buttonPanel.add( new JButton( "Exit") );
-		itemQueryPanel.add( buttonPanel );
-		
 		FormsLibrary.itemQuery = itemQueryPanel;
 		ScreenStateService.primaryPanel.add( itemQueryPanel );
 		return itemQueryPanel; 
