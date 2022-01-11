@@ -1,19 +1,15 @@
 package Application;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
 import com.inman.model.User;
 import com.inman.model.rest.StatusResponse;
 import com.inman.model.rest.VerifyCredentialsRequest;
 import com.inman.model.rest.VerifyCredentialsResponse;
+import org.springframework.web.client.RestTemplate;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class FormsLibrary {
 	public static JPanel startServer;
@@ -64,8 +60,8 @@ public class FormsLibrary {
 				
 				VerifyCredentialsRequest verifyCredentialsRequest = 
 						new VerifyCredentialsRequest( username.getText(), password.getText() );
-				
-				VerifyCredentialsResponse verifyCredentialsResponse = Main.restTemplate.postForObject( "http://localhost:8080/" + VerifyCredentialsRequest.rootUrl, 
+				RestTemplate restTemplate = new RestTemplate();
+				VerifyCredentialsResponse verifyCredentialsResponse = restTemplate.postForObject( "http://localhost:8080/" + VerifyCredentialsRequest.rootUrl,
 						verifyCredentialsRequest, VerifyCredentialsResponse.class );
 				
 				if ( verifyCredentialsResponse.getStatus().equals( StatusResponse.INMAN_OK ) ) {

@@ -1,23 +1,14 @@
 package Application;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
-
 import com.inman.business.QueryParameterException;
 import com.inman.model.rest.ItemResponse;
 import com.inman.model.rest.SearchItemRequest;
+import org.springframework.web.client.RestTemplate;
 
-import Verifiers.SummaryId;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class ItemPropertiesForm {
 	private static JPanel itemProperty;
@@ -31,10 +22,21 @@ public class ItemPropertiesForm {
 		itemPropertyPanel.setLayout( new BoxLayout( itemPropertyPanel, BoxLayout.Y_AXIS ) );
 		itemPropertyPanel.add( Utility.labelMaker(" ", JLabel.TRAILING),
 				BorderLayout.LINE_START  );
+		itemPropertyPanel.setBorder( Utility.blackLine );
+	
+		itemPropertyPanel.add( Utility.titleMaker("Add Item "),
+				BorderLayout.LINE_START  );
 		
-		JLabel errorMessage = Utility.createErrorMessage( JLabel.TRAILING  ) ;
-		itemPropertyPanel.add( errorMessage );
-		
+		itemPropertyPanel.add( Utility.labelMaker(" ", JLabel.TRAILING),
+				BorderLayout.LINE_START  );
+
+		ErrorText errorText = new ErrorText();
+		errorText.clearError();
+		itemPropertyPanel.add( errorText );
+
+		itemPropertyPanel.add( Utility.labelMaker(" ", JLabel.TRAILING),
+				BorderLayout.LINE_START  );
+
 		JTextField summaryId = Utility.createTextField( "Summary Id" );
 		summaryId.setInputVerifier(  new Verifiers.SummaryId() );
 		itemPropertyPanel.add( summaryId );
@@ -68,16 +70,15 @@ public class ItemPropertiesForm {
 						"1", summaryId.getText(), description.getText() );
 
 					String completeUrl = "http://localhost:8080/" + SearchItemRequest.queryUrl;
-					ItemResponse responsePackage = Main.restTemplate.postForObject( completeUrl, searchItemRequest, ItemResponse.class );
+					RestTemplate restTemplate = new RestTemplate();
+					ItemResponse responsePackage = restTemplate.postForObject( completeUrl, searchItemRequest, ItemResponse.class );
 					
-					errorMessage.setText( "" );
-					
-					var numRows = responsePackage.getData().length;
-					
+					errorText.clearError( );
+				
 				} catch (QueryParameterException qfe ) {
-					errorMessage.setText( qfe.getMessage() );
+					errorText.signalError( qfe.getMessage() );
 				} catch ( Exception e1 ) {
-					errorMessage.setText( e1.getMessage() );
+					errorText.signalError( e1.getMessage() );
 				}
 			}
 		} );  

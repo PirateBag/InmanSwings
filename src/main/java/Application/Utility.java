@@ -19,7 +19,7 @@ public class Utility {
 	static final Font titleFont = new Font("Arial", Font.PLAIN, 30); 
 	static final Font labelFont = new Font("Arial", Font.PLAIN, 8);
     static final Border blackLine = BorderFactory.createLineBorder(Color.black);
-    static final Font textFont = new Font("Arial", Font.PLAIN, 15);
+    static final Font textFont = new Font("Arial", Font.PLAIN, 12);
 	
 	public static JLabel titleMaker(String xContent ) {
 		var label = new JLabel( xContent  ); 
@@ -49,6 +49,16 @@ public class Utility {
         rValue.setBorder( titledBorder );
         return rValue;
 	}
+	
+	public static JTextField createErrorField( String xLabel ) {
+		var rValue = new JTextField();
+        rValue.setFont( textFont );
+        rValue.setMaximumSize( new Dimension( 400, 23) );
+        rValue.setForeground( Color.RED );
+        return rValue;
+	}
+	
+	
 	
 	public static JLabel createErrorMessage( int xPosition ) {
 		var label = new JLabel( "" );

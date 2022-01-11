@@ -17,7 +17,7 @@ import javax.swing.*;
 @ComponentScan
 public class Main { 
 public static boolean RIGHT_TO_LEFT = false;
-public static RestTemplate restTemplate = new RestTemplate();
+
 
 
 public static void addComponentsToPane(Container pane) {
