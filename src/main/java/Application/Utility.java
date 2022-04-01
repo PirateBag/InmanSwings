@@ -4,6 +4,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -13,12 +15,16 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
+
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 public class Utility {
 	static final Font titleFont = new Font("Arial", Font.PLAIN, 30); 
 	static final Font labelFont = new Font("Arial", Font.PLAIN, 8);
-    static final Border blackLine = BorderFactory.createLineBorder(Color.black);
+    public static final Border blackLine = BorderFactory.createLineBorder(Color.black);
     static final Font textFont = new Font("Arial", Font.PLAIN, 12);
 	
 	public static JLabel titleMaker(String xContent ) {
@@ -81,7 +87,8 @@ public class Utility {
 
 	public static boolean isServiceUp() {
 		try {
-			Main.restTemplate.getForObject( "http://localhost:8080/status ", String.class );
+			RestTemplate restTemplate = new RestTemplate();
+			restTemplate.getForObject( "http://localhost:8080/status ", String.class );
 			return true;
 		} catch ( RestClientException e ) {
 			System.out.println( "Application Service is down:  " + e.getMessage() );
@@ -89,5 +96,23 @@ public class Utility {
 			System.out.println( "A more spectaular error occurred while checking server status:  " + e.getMessage() );
 		}
 		return false;
+	}
+
+	//Move to Common
+	private static List<HttpMessageConverter<?>> getMessageConverters() {
+		List<HttpMessageConverter<?>> converters =
+				new ArrayList<HttpMessageConverter<?>>();
+		converters.add(new MappingJackson2HttpMessageConverter());
+		return converters;
+	}
+
+	public static RestTemplate getRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setMessageConverters( getMessageConverters() );
+		return restTemplate;
+	}
+
+	public static boolean isEmptyOrNull(StringBuilder xString) {
+		return xString.length() == 0;
 	}
 }

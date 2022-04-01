@@ -1,15 +1,7 @@
 package Application;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-
+import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class Driver {
 
@@ -34,22 +26,20 @@ public class Driver {
 		button = new JButton("MenuBar");
 		button.setPreferredSize(new Dimension(100,600));  
 		pane.add( button, BorderLayout.LINE_START );
-		
-		button = new JButton("Status Button" );
-		button.setPreferredSize( new Dimension( 800,40 ));
-		pane.add(button, BorderLayout.PAGE_END );
+
 		ScreenStateService.primaryPanel = pane;
-
-		FormsLibrary formsLibrary = new FormsLibrary();
-
+		button = new JButton("Notifications" );
+		button.setPreferredSize( new Dimension( 800,25 ));
+		pane.add(button, BorderLayout.PAGE_END );
+		ScreenStateService.setNotifications( button );
 		ScreenStateService.refreshServer();
 		
-		ScreenStateService.evaluate( new Action( "empty", ScreenTransitionType.REPLACE, formsLibrary.getEmpty() ) );
+		ScreenStateService.evaluate( new Action( "empty", ScreenTransitionType.REPLACE, FormsLibrary.getEmpty() ) );
 	
 		if ( ScreenStateService.isServerConnected() ) {
-			ScreenStateService.evaluate( new Action( "StartWithLogin", ScreenTransitionType.REPLACE, formsLibrary.getLogin() ) );
+			ScreenStateService.evaluate( new Action( "StartWithLogin", ScreenTransitionType.REPLACE, FormsLibrary.getLogin() ) );
 		} else {
-			ScreenStateService.evaluate( new Action( "StartWithConnect", ScreenTransitionType.REPLACE, formsLibrary.getStartServer() ) );
+			ScreenStateService.evaluate( new Action( "StartWithConnect", ScreenTransitionType.REPLACE, FormsLibrary.getStartServer() ) );
 		}
 		pane.pack();
 		pane.setVisible(true);

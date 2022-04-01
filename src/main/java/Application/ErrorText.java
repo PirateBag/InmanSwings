@@ -15,13 +15,30 @@ public class ErrorText extends JTextArea {
         setLineWrap(true);
     }
 
-    public void signalError( String text ) {
-        setText( text );
-        setVisible( true );
+    /**
+     * Sets the error text on input.  Tolerates null and empty strings.
+     * @param text
+     * @return true if an error was signalled.
+     */
+    public boolean signalError( String text ) {
+        if ( text == null || text.length() > 0 ) {
+            setText(text);
+            setVisible(true);
+            return true;
+        }
+        return false;
     }
     public void clearError( ) {
         setText( "" );
         setVisible( false );
     }
+
+    public boolean hasError() {
+        return getText().length() > 0;
+    }
+
+    //  Make checking for noError clearer.
+    public boolean hasNoError() { return !hasError(); };
+
 
 }
