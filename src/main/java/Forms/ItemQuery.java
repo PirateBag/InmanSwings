@@ -8,7 +8,8 @@ import Verifiers.IdVerifier;
 import Verifiers.SummaryIdVerifier;
 import com.inman.business.QueryParameterException;
 import com.inman.entity.Item;
-import com.inman.model.rest.ItemResponse;
+import com.inman.model.response.ItemResponse;
+import com.inman.model.response.ResponsePackage;
 import com.inman.model.rest.SearchItemRequest;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,7 +24,7 @@ import java.util.Arrays;
 
 
 public class ItemQuery extends InmanPanel {
-    ItemResponse responsePackage = new ItemResponse();
+    ResponsePackage responsePackage = new ResponsePackage();
     DefaultTableModel tableModel = new DefaultTableModel();
     IdVerifier idVerifier = new IdVerifier();
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
@@ -91,6 +92,7 @@ public class ItemQuery extends InmanPanel {
 
                     String completeUrl = "http://localhost:8080/" + SearchItemRequest.queryUrl;
                     RestTemplate restTemplate = new RestTemplate();
+                    String responseJson = restTemplate.postForObject(completeUrl, searchItemRequest, String.class);
                     responsePackage = restTemplate.postForObject(completeUrl, searchItemRequest, ItemResponse.class);
 
                     errorMessage.setText("");
@@ -177,7 +179,7 @@ public class ItemQuery extends InmanPanel {
         var numRows = responsePackage.getData().length;
 
         for (int row = 0; row < numRows; row++) {
-            var item = responsePackage.getData()[row];
+            var item = (Item) responsePackage.getData()[row];
             tableModel.insertRow(row, new Object[]{item.getId(), item.getSummaryId(), item.getDescription(), item.getUnitCost() });
         }
     }
@@ -194,15 +196,15 @@ public class ItemQuery extends InmanPanel {
             /*  No response package may mean the cancel button was pushed.  */
             return;
         }
-        var numRows = responsePackage.getData() == null ? 0 : responsePackage.getData().length;
+        var numRows = (responsePackage.getData() == null) ? 0 : responsePackage.getData().length;
 
         /*  In the future, we may find that we can get multiple updates.  */
-        assert (xAction.getResponsePackage().getData().length != 1);
+        assert (1 != xAction.getResponsePackage().getData().length);
 
         Item newOrUpdatedItem = (Item) xAction.getResponsePackage().getData()[0];
-        int row = 0;
+        int row;
         for ( row = 0; row < numRows; row++) {
-            var item = responsePackage.getData()[row];
+            var item = (Item) responsePackage.getData()[row];
             if (item.getId() == newOrUpdatedItem.getId()) {
                 responsePackage.getData()[row] = newOrUpdatedItem;
                 break;
@@ -214,7 +216,7 @@ public class ItemQuery extends InmanPanel {
          */
         if ( row == numRows ) {
 
-            Item [] newItems  =Arrays.copyOf( responsePackage.getData(), responsePackage.getData().length+ 1 );
+            Item [] newItems  = Arrays.copyOf( (Item []) responsePackage.getData(), responsePackage.getData().length+ 1 );
             newItems[responsePackage.getData().length ] = newOrUpdatedItem;
             responsePackage.setData( newItems );
         }

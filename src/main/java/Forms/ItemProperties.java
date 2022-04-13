@@ -6,9 +6,10 @@ import Verifiers.CostVerifier;
 import Verifiers.DescriptionVerifier;
 import Verifiers.SummaryIdVerifier;
 import com.inman.entity.Item;
+import com.inman.model.rest.ErrorLine;
 import com.inman.model.rest.ItemAddRequest;
-import com.inman.model.rest.ItemResponse;
 import com.inman.model.rest.ItemUpdateRequest;
+import com.inman.model.response.ResponsePackage;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,6 +17,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Optional;
 
 public class ItemProperties extends InmanPanel {
@@ -79,7 +81,7 @@ public class ItemProperties extends InmanPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ItemAddRequest itemAddRequest;
-                ItemResponse responsePackage = null;
+                ResponsePackage responsePackage = null;
 
                 itemAddRequest = new ItemAddRequest(
                         summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
@@ -91,7 +93,7 @@ public class ItemProperties extends InmanPanel {
                     try {
                         String completeUrl = "http://localhost:8080/" + ItemAddRequest.addUrl;
                         RestTemplate restTemplate = new RestTemplate();
-                        responsePackage = restTemplate.postForObject(completeUrl, itemAddRequest, ItemResponse.class);
+                        responsePackage = restTemplate.postForObject(completeUrl, itemAddRequest, ResponsePackage.class);
 
                         errorText.clearError();
                     } catch (Exception e1) {
@@ -99,8 +101,9 @@ public class ItemProperties extends InmanPanel {
                     }
                 }
 
-                if (responsePackage != null && responsePackage.getErrors().size() > 0) {
-                    errorText.signalError(responsePackage.getErrors().get(0).getMessage());
+                if ((responsePackage != null) && (responsePackage.getErrors().size() > 0)) {
+                    ArrayList<ErrorLine> errorLines = responsePackage.getErrors();
+                    errorText.signalError( errorLines.get(0).getMessage() );
                 }
 
                 if (errorText.hasNoError()) {
@@ -114,7 +117,7 @@ public class ItemProperties extends InmanPanel {
         updateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ItemResponse responsePackage = null;
+                ResponsePackage responsePackage = null;
 
                 var itemUpdateRequest = new ItemUpdateRequest(
                         Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
@@ -126,7 +129,7 @@ public class ItemProperties extends InmanPanel {
                     try {
                         String completeUrl = "http://localhost:8080/" + ItemUpdateRequest.updateUrl;
                         RestTemplate restTemplate = new RestTemplate();
-                        responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
+                        responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ResponsePackage.class);
 
                         errorText.clearError();
                     } catch (Exception e1) {
@@ -135,7 +138,7 @@ public class ItemProperties extends InmanPanel {
                 }
 
                 if (responsePackage != null && responsePackage.getErrors().size() > 0) {
-                    errorText.signalError(responsePackage.getErrors().get(0).getMessage());
+                    errorText.signalError(((ErrorLine) responsePackage.getErrors().get( 0 )).getMessage());
                 }
 
                 if (errorText.hasNoError()) {

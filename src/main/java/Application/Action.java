@@ -1,6 +1,6 @@
 package Application;
 
-import com.inman.model.rest.ResponsePackage;
+import com.inman.model.response.ResponsePackage;
 
 import javax.swing.*;
 import java.util.Optional;
@@ -9,7 +9,7 @@ public class Action {
 	private String actionName;
 	private ScreenTransitionType screenTransitionType;
 	private Optional<JPanel> nextPanel;
-	private ResponsePackage<?> responsePackage;
+	private ResponsePackage responsePackage;
 	private Long[] idsToActOn;
 	private ScreenMode screenMode;
 	
@@ -50,14 +50,14 @@ public class Action {
 	}
 
 
-	public Action( String xActionName, ScreenTransitionType xScreenTransitionType, ResponsePackage<?> xResponsePackage ) {
+	public Action( String xActionName, ScreenTransitionType xScreenTransitionType, ResponsePackage xResponsePackage ) {
 		actionName = xActionName;
 		screenTransitionType = xScreenTransitionType;
 		responsePackage = xResponsePackage;
 		nextPanel = Optional.empty();
 	}
 	public Action(String xActionName, ScreenTransitionType xScreenTransitionType, JPanel xNextPanel,
-				  ResponsePackage<?> xResponsePackage)
+				  ResponsePackage xResponsePackage)
 	{
 		actionName = xActionName;
 		screenTransitionType = xScreenTransitionType;
@@ -67,7 +67,7 @@ public class Action {
 
 
 	public Action(String xActionName, ScreenTransitionType xScreenTransitionType, JPanel xNextPanel,
-				  ResponsePackage<?> xResponsePackage, Long [] xIdsToActOn, ScreenMode xScreenMode ) {
+				  ResponsePackage xResponsePackage, Long [] xIdsToActOn, ScreenMode xScreenMode ) {
 		actionName = xActionName;
 		screenTransitionType = xScreenTransitionType;
 		nextPanel = Optional.of( xNextPanel );
@@ -80,11 +80,11 @@ public class Action {
 		this.nextPanel = nextPanel;
 	}
 
-	public ResponsePackage<?> getResponsePackage() {
+	public ResponsePackage getResponsePackage() {
 		return responsePackage;
 	}
 
-	public void setResponsePackage(ResponsePackage<?> responsePackage) {
+	public void setResponsePackage(ResponsePackage responsePackage) {
 		this.responsePackage = responsePackage;
 	}
 

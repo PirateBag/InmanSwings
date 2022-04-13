@@ -49,8 +49,8 @@ public class DomainVerifier extends InputVerifier {
         }
     }
 
-    pulblic JTextField getJTextField () {
-        itemId = Utility.createTextField(rowHeader);
+    public JTextField getJTextField () {
+        return Utility.createTextField(rowHeader);
     }
 
     public ValidationRules getValidationRules() {
