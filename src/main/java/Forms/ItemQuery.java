@@ -9,7 +9,6 @@ import Verifiers.SummaryIdVerifier;
 import com.inman.business.QueryParameterException;
 import com.inman.entity.Item;
 import com.inman.model.response.ItemResponse;
-import com.inman.model.response.ResponsePackage;
 import com.inman.model.rest.SearchItemRequest;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,11 +19,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Arrays;
 
 
 public class ItemQuery extends InmanPanel {
-    ResponsePackage responsePackage = new ResponsePackage();
+    ItemResponse responsePackage = new ItemResponse();
     DefaultTableModel tableModel = new DefaultTableModel();
     IdVerifier idVerifier = new IdVerifier();
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
@@ -114,8 +112,6 @@ public class ItemQuery extends InmanPanel {
                         null, null, ScreenMode.ADD);
 
                 ScreenStateService.evaluate(action);
-
-
             }
         });
 
@@ -142,11 +138,6 @@ public class ItemQuery extends InmanPanel {
 
         queryResults.addMouseListener(new MouseListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-
-            }
-
-            @Override
             public void mousePressed(MouseEvent e) {
                 Long selectedCellValue = 0L;
                 if (queryResults.getRowCount() > 0 && queryResults.getSelectedRow() >= 0) {
@@ -155,16 +146,17 @@ public class ItemQuery extends InmanPanel {
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) {
-            }
+            public void mouseReleased(MouseEvent e) { }
 
             @Override
-            public void mouseEntered(MouseEvent e) {
-            }
+            public void mouseEntered(MouseEvent e) {  }
 
             @Override
-            public void mouseExited(MouseEvent e) {
-            }
+            public void mouseExited(MouseEvent e) {  }
+
+            @Override
+            public void mouseClicked(MouseEvent e) { }
+
         });
 
         ScreenStateService.primaryPanel.add(this);
@@ -192,34 +184,12 @@ public class ItemQuery extends InmanPanel {
      *
      */
     public void updateStateWhenChildCloses(Action xAction) {
-        if (xAction.getResponsePackage() == null) {
-            /*  No response package may mean the cancel button was pushed.  */
-            return;
-        }
-        var numRows = (responsePackage.getData() == null) ? 0 : responsePackage.getData().length;
+        /*  No response package may mean the cancel button was pushed.  */
+        if (xAction.getResponsePackage() == null) { return; }
 
         /*  In the future, we may find that we can get multiple updates.  */
         assert (1 != xAction.getResponsePackage().getData().length);
-
-        Item newOrUpdatedItem = (Item) xAction.getResponsePackage().getData()[0];
-        int row;
-        for ( row = 0; row < numRows; row++) {
-            var item = (Item) responsePackage.getData()[row];
-            if (item.getId() == newOrUpdatedItem.getId()) {
-                responsePackage.getData()[row] = newOrUpdatedItem;
-                break;
-            }
-        }
-
-        /*  If we ran through all the existing rows in the item response without finding a match,
-        This must be a new row.
-         */
-        if ( row == numRows ) {
-
-            Item [] newItems  = Arrays.copyOf( (Item []) responsePackage.getData(), responsePackage.getData().length+ 1 );
-            newItems[responsePackage.getData().length ] = newOrUpdatedItem;
-            responsePackage.setData( newItems );
-        }
+        responsePackage = (ItemResponse) responsePackage.mergeAnotherResponse( xAction.getResponsePackage() );
         createTableModelFromResponsePackage();
     }
 

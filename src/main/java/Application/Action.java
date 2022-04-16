@@ -3,6 +3,7 @@ package Application;
 import com.inman.model.response.ResponsePackage;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 public class Action {
@@ -12,7 +13,8 @@ public class Action {
 	private ResponsePackage responsePackage;
 	private Long[] idsToActOn;
 	private ScreenMode screenMode;
-	
+	private Optional<Class> nextPanelClass;
+
 	public String getActionName() {
 		return actionName;
 	}
@@ -28,13 +30,17 @@ public class Action {
 	public void setScreenTransitionType(ScreenTransitionType screenTransitionType) {
 		this.screenTransitionType = screenTransitionType;
 	}
-
-	public JPanel getNextPanel() {
-		return nextPanel.get();
-	}
-
 	public void setNextPanel( JPanel nextPanel) {
 		this.nextPanel = Optional.of( nextPanel );
+	}
+
+	public JPanel getNextPanel() throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+		if ( this.nextPanel.isPresent() ) {
+			return this.nextPanel.get();
+		}
+
+		JPanel jpanel = (JPanel) nextPanelClass.get().getDeclaredConstructor().newInstance();
+		return jpanel;
 	}
 
 	public Action( String xActionName, ScreenTransitionType xScreenTransitionType,  JPanel xNextPanel) {

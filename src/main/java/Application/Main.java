@@ -1,14 +1,16 @@
 package Application;
 
-import org.springframework.boot.autoconfigure.*;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
+
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 
 @SpringBootApplication
 @ComponentScan
 public class Main { 
 
-public static void main(String[] args) {
+public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
     try {
         //UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
         UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
@@ -21,6 +23,7 @@ public static void main(String[] args) {
     } catch (ClassNotFoundException ex) {
         ex.printStackTrace();
     }
+
     /* Turn off metal's use bold fonts */
     UIManager.put("swing.boldMetal", Boolean.FALSE);
         

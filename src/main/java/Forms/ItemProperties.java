@@ -6,10 +6,10 @@ import Verifiers.CostVerifier;
 import Verifiers.DescriptionVerifier;
 import Verifiers.SummaryIdVerifier;
 import com.inman.entity.Item;
+import com.inman.model.response.ItemResponse;
 import com.inman.model.rest.ErrorLine;
 import com.inman.model.rest.ItemAddRequest;
 import com.inman.model.rest.ItemUpdateRequest;
-import com.inman.model.response.ResponsePackage;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.web.client.RestTemplate;
 
@@ -80,10 +80,8 @@ public class ItemProperties extends InmanPanel {
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ItemAddRequest itemAddRequest;
-                ResponsePackage responsePackage = null;
-
-                itemAddRequest = new ItemAddRequest(
+                ItemResponse responsePackage = null;
+                var itemAddRequest = new ItemAddRequest(
                         summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
 
                 var errorMessages = itemAddRequestVerifier(itemAddRequest);
@@ -93,8 +91,7 @@ public class ItemProperties extends InmanPanel {
                     try {
                         String completeUrl = "http://localhost:8080/" + ItemAddRequest.addUrl;
                         RestTemplate restTemplate = new RestTemplate();
-                        responsePackage = restTemplate.postForObject(completeUrl, itemAddRequest, ResponsePackage.class);
-
+                        responsePackage = restTemplate.postForObject(completeUrl, itemAddRequest, ItemResponse.class);
                         errorText.clearError();
                     } catch (Exception e1) {
                         errorText.signalError(e1.toString());
@@ -117,7 +114,7 @@ public class ItemProperties extends InmanPanel {
         updateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ResponsePackage responsePackage = null;
+                ItemResponse responsePackage = null;
 
                 var itemUpdateRequest = new ItemUpdateRequest(
                         Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
@@ -129,8 +126,7 @@ public class ItemProperties extends InmanPanel {
                     try {
                         String completeUrl = "http://localhost:8080/" + ItemUpdateRequest.updateUrl;
                         RestTemplate restTemplate = new RestTemplate();
-                        responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ResponsePackage.class);
-
+                        responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
                         errorText.clearError();
                     } catch (Exception e1) {
                         errorText.signalError(e1.toString());

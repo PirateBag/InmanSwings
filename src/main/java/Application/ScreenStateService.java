@@ -5,6 +5,7 @@ import com.inman.model.User;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -64,17 +65,37 @@ public class ScreenStateService {
 	}
 	
 	public static void evaluate( Action xAction  ) {
+
+
 		switch ( xAction.getScreenTransitionType() ) {
-		case NO_CHANGE :
-			break;
 		case REPLACE :
 			actionHistory.push( xAction );
-			replaceComponent( primaryPanel, xAction.getNextPanel() );
+			try {
+				replaceComponent( primaryPanel, xAction.getNextPanel() );
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
 			break;
 		case PUSH:
 			actionHistory.push( xAction );
 			jPanelStack.push( currentPanel );
-			replaceComponent( primaryPanel, xAction.getNextPanel() );
+			try {
+				replaceComponent( primaryPanel, xAction.getNextPanel() );
+			} catch (NoSuchMethodException e) {
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				e.printStackTrace();
+			} catch (InstantiationException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
 			currentPanel.updateStateWhenOpeningNewChild( xAction );
 			notifications.setText( xAction.getActionName() );
 			break;
