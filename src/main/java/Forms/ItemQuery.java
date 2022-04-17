@@ -1,6 +1,6 @@
 package Forms;
 
-import Application.Action;
+import Application.NextAction;
 import Application.*;
 import Verifiers.CostVerifier;
 import Verifiers.DescriptionVerifier;
@@ -108,7 +108,7 @@ public class ItemQuery extends InmanPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                Action action = new Action("Add new item", ScreenTransitionType.PUSH, FormsLibrary.getItemProperties(),
+                NextAction action = new NextAction("Add new item", ScreenTransitionType.PUSH, ItemProperties.class,
                         null, null, ScreenMode.ADD);
 
                 ScreenStateService.evaluate(action);
@@ -128,7 +128,7 @@ public class ItemQuery extends InmanPanel {
                 Long selectedCellValue = (Long) queryResults.getValueAt(queryResults.getSelectedRow(), 0);
                 Long[] selectValues = new Long[]{selectedCellValue};
 
-                Action action = new Action("displayAndUpdate", ScreenTransitionType.PUSH, FormsLibrary.getItemProperties(),
+                NextAction action = new NextAction("displayAndUpdate", ScreenTransitionType.PUSH, ItemPropertiesWithBom.class,
                         responsePackage, selectValues, ScreenMode.CHANGE);
                 ScreenStateService.evaluate(action);
 
@@ -183,13 +183,13 @@ public class ItemQuery extends InmanPanel {
      * The updated or inserted item is added to the table model.
      *
      */
-    public void updateStateWhenChildCloses(Action xAction) {
+    public void updateStateWhenChildCloses(NextAction xAction) {
         /*  No response package may mean the cancel button was pushed.  */
         if (xAction.getResponsePackage() == null) { return; }
 
         /*  In the future, we may find that we can get multiple updates.  */
         assert (1 != xAction.getResponsePackage().getData().length);
-        responsePackage = (ItemResponse) responsePackage.mergeAnotherResponse( xAction.getResponsePackage() );
+        responsePackage = new ItemResponse( responsePackage.mergeAnotherResponse( xAction.getResponsePackage()  ) );
         createTableModelFromResponsePackage();
     }
 

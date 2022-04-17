@@ -1,7 +1,7 @@
 package Forms;
 
 import Application.*;
-import Application.Action;
+import Application.NextAction;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,7 +25,7 @@ public class StartServer extends InmanPanel {
                 ScreenStateService.refreshServer();
                 if (ScreenStateService.isServerConnected()) {
                     ScreenStateService.evaluate(
-                            new Action("login", ScreenTransitionType.REPLACE, FormsLibrary.getLogin()));
+                            new NextAction("login", ScreenTransitionType.REPLACE, Login.class));
                 }
 
             }

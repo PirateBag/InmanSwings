@@ -1,5 +1,9 @@
 package Application;
 
+import Forms.Empty;
+import Forms.Login;
+import Forms.StartServer;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -34,12 +38,12 @@ public class Driver {
 		ScreenStateService.setNotifications( button );
 		ScreenStateService.refreshServer();
 		
-		ScreenStateService.evaluate( new Action( "empty", ScreenTransitionType.REPLACE, FormsLibrary.getEmpty() ) );
+		ScreenStateService.evaluate( new NextAction( "empty", ScreenTransitionType.REPLACE, Empty.class ) );
 	
 		if ( ScreenStateService.isServerConnected() ) {
-			ScreenStateService.evaluate( new Action( "StartWithLogin", ScreenTransitionType.REPLACE, FormsLibrary.getLogin() ) );
+			ScreenStateService.evaluate( new NextAction( "StartWithLogin", ScreenTransitionType.REPLACE, Login.class ) );
 		} else {
-			ScreenStateService.evaluate( new Action( "StartWithConnect", ScreenTransitionType.REPLACE, FormsLibrary.getStartServer() ) );
+			ScreenStateService.evaluate( new NextAction( "StartWithConnect", ScreenTransitionType.REPLACE, StartServer.class  ) );
 		}
 		pane.pack();
 		pane.setVisible(true);

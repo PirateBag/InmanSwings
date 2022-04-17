@@ -1,7 +1,6 @@
 package Forms;
 
 import Application.*;
-import Application.Action;
 import com.inman.model.User;
 import com.inman.model.rest.StatusResponse;
 import com.inman.model.rest.VerifyCredentialsRequest;
@@ -59,8 +58,10 @@ public class Login extends InmanPanel {
                 if (verifyCredentialsResponse.getStatus().equals(StatusResponse.INMAN_OK)) {
                     User user = new User();
                     user.setUserName(username.getText());
+                    /*ScreenStateService.evaluate(
+                            new Action("itemQuery", ScreenTransitionType.REPLACE, FormsLibrary.getItemQuery())); */
                     ScreenStateService.evaluate(
-                            new Action("itemQuery", ScreenTransitionType.REPLACE, FormsLibrary.getItemQuery()));
+                            new NextAction("itemQuery", ScreenTransitionType.REPLACE, ItemQuery.class ));
                 } else {
                     Utility.setErrorMessage(errorMessage, verifyCredentialsResponse.getMessage());
                 }

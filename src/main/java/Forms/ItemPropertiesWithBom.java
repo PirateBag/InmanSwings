@@ -1,11 +1,10 @@
 package Forms;
 
-import Application.NextAction;
 import Application.*;
-import Verifiers.CostVerifier;
-import Verifiers.DescriptionVerifier;
-import Verifiers.SummaryIdVerifier;
+import Verifiers.*;
 import com.inman.entity.Item;
+import com.inman.model.request.BomSearchRequest;
+import com.inman.model.response.BomResponse;
 import com.inman.model.response.ItemResponse;
 import com.inman.model.rest.ErrorLine;
 import com.inman.model.rest.ItemAddRequest;
@@ -14,13 +13,14 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class ItemProperties extends InmanPanel {
+public class ItemPropertiesWithBom extends InmanPanel {
     JLabel title = Utility.titleMaker("Add Item ");
     JTextField id = Utility.createTextField("Id");
     JTextField summaryId = Utility.createTextField("Summary Id");
@@ -31,16 +31,23 @@ public class ItemProperties extends InmanPanel {
     JButton saveButton = new JButton("Save");
     JButton cancelButton = new JButton("Cancel & Return");
     JButton updateButton = new JButton("Update");
-
-
     NextAction action;
 
+    IdVerifier idVerifier = new IdVerifier();
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
     DescriptionVerifier descriptionVerifier = new DescriptionVerifier();
     CostVerifier costVerifier = new CostVerifier();
 
+    ParentIdVerifier parentIdVerifier = new ParentIdVerifier();
+    ChildIdVerifier childIdVerifier = new ChildIdVerifier();
+    QuantityPer quantityPer = new QuantityPer();
 
-    public ItemProperties() {
+    DefaultTableModel tableModel = new DefaultTableModel();
+
+    BomResponse responsePackage = new BomResponse();
+
+
+    public ItemPropertiesWithBom() {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Utility.labelMaker(" ", JLabel.TRAILING),
@@ -75,6 +82,21 @@ public class ItemProperties extends InmanPanel {
         buttonPanel.add(clearButton);
         buttonPanel.add(updateButton);
         add(buttonPanel);
+
+
+        JTable queryResults = new JTable(tableModel);
+        String[] columnNames = {idVerifier.getColumnHeader(),
+                parentIdVerifier.getColumnHeader(),
+                descriptionVerifier.getColumnHeader(),
+                childIdVerifier.getColumnHeader(),
+                descriptionVerifier.getColumnHeader(),
+                quantityPer.getColumnHeader()};
+        for (String columnName : columnNames) {
+            tableModel.addColumn(columnName);
+        }
+        queryResults.setFillsViewportHeight(true);
+        add(new JScrollPane(queryResults));
+
 
         //noinspection Convert2Lambda
         saveButton.addActionListener(new ActionListener() {
@@ -235,8 +257,23 @@ public class ItemProperties extends InmanPanel {
                 clearButton.setText("Undo");
                 title.setText("Change Item Properties");
 
+                try {
+                    String completeUrl = "http://localhost:8080/" + BomSearchRequest.findByParent;
+                    RestTemplate restTemplate = new RestTemplate();
+                    BomSearchRequest bomSearchRequest = new BomSearchRequest();
+                    bomSearchRequest.setIdToSearchFor( Long.parseLong( id.getText() ) );
+                    responsePackage = restTemplate.postForObject(completeUrl, bomSearchRequest, BomResponse.class);
+                    responsePackage = new BomResponse( responsePackage  );
+                    errorText.clearError();
+                } catch (Exception e1) {
+                    errorText.signalError(e1.toString());
+                }
+                createTableModelFromResponsePackage();
+
                 saveButton.setVisible( false  );
                 updateButton.setVisible( true );
+
+
 
                 break;
         }
@@ -258,10 +295,25 @@ public class ItemProperties extends InmanPanel {
             summaryId.setText(itemToBeModified.getSummaryId());
             description.setText(itemToBeModified.getDescription());
             unitCost.setText(Double.toString(itemToBeModified.getUnitCost()));
+
+
             id.setVisible( true );
         } else {
             id.setVisible( false );
         }
     }
 
+    /**
+     * Create the table model based on response package.
+     * No values are returned; side effect is the changes to the table model.
+     */
+    private void createTableModelFromResponsePackage() {
+        tableModel.setRowCount(0);
+        var numRows = responsePackage.getData().length;
+
+        for (int row = 0; row < numRows; row++) {
+            var bom = (com.inman.entity.Bom) responsePackage.getData()[row];
+            tableModel.insertRow(row, new Object[]{bom.getId(), bom.getParentId(), "ParentId", bom.getChildId(), "childid", bom.getQuantityPer() });
+        }
+    }
 }

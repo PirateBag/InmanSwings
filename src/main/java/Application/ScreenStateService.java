@@ -2,10 +2,11 @@ package Application;
 
 
 import com.inman.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -15,7 +16,8 @@ public class ScreenStateService {
 	static InmanPanel currentPanel;
 	public static Container primaryPanel;
 	static Stack<InmanPanel> jPanelStack = new Stack<>();
-	static Stack<Action> actionHistory = new Stack<>();
+	static Stack<NextAction> actionHistory = new Stack<>();
+	static Logger logger = LoggerFactory.getLogger( ScreenStateService.class );
 
 	static JButton notifications;
 
@@ -34,10 +36,6 @@ public class ScreenStateService {
 		currentPanel = (InmanPanel) xCurrentPanel;
 	}
 
-
-	/** 
-	 * Check to see if we able to connect to an Inman server.
-	 */
 	public static void refreshServer() {
 			isServerConnected = Utility.isServiceUp();
 	}
@@ -57,45 +55,23 @@ public class ScreenStateService {
 	public static void replaceComponent( Container panel, JPanel xNew ) {
 		if ( currentPanel != null ) {
 			currentPanel.setVisible( false); 
-			//  panel.remove( (java.awt.Component) currentPanel );
 		}
 		panel.add( xNew );
 		currentPanel = (InmanPanel) xNew;
 		currentPanel.setVisible( true );
 	}
 	
-	public static void evaluate( Action xAction  ) {
-
+	public static void evaluate( NextAction xAction  ) {
 
 		switch ( xAction.getScreenTransitionType() ) {
 		case REPLACE :
 			actionHistory.push( xAction );
-			try {
-				replaceComponent( primaryPanel, xAction.getNextPanel() );
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
+			replaceComponent(primaryPanel, xAction.getNextPanel());
 			break;
 		case PUSH:
 			actionHistory.push( xAction );
 			jPanelStack.push( currentPanel );
-			try {
-				replaceComponent( primaryPanel, xAction.getNextPanel() );
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			} catch (InvocationTargetException e) {
-				e.printStackTrace();
-			} catch (InstantiationException e) {
-				e.printStackTrace();
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
+			replaceComponent( primaryPanel, xAction.getNextPanel() );
 			currentPanel.updateStateWhenOpeningNewChild( xAction );
 			notifications.setText( xAction.getActionName() );
 			break;
