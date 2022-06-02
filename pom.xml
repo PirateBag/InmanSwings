@@ -47,6 +47,23 @@
           <version>RELEASE</version>
           <scope>compile</scope>
       </dependency>
+      <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>InmanServer</artifactId>
+          <version>0.1.0</version>
+          <scope>test</scope>
+      </dependency>
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>InmanServer</artifactId>
+          <version>0.1.0</version>
+          <scope>compile</scope>
+      </dependency>
 
   </dependencies>
   

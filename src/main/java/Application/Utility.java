@@ -1,25 +1,16 @@
 package Application;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
-
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Utility {
 	static final Font titleFont = new Font("Arial", Font.PLAIN, 30); 
@@ -115,4 +106,15 @@ public class Utility {
 	public static boolean isEmptyOrNull(StringBuilder xString) {
 		return xString.length() == 0;
 	}
+
+	/**
+	 * Trim the lasst character from the input string.
+	 * No bad input checking.
+	 *
+	 * @param oneCharacterTooMany
+	 * @return allButTheLastCharacter;
+	 */
+    public static String removeLastChar(String oneCharacterTooMany ) {
+		return oneCharacterTooMany.substring(0, oneCharacterTooMany.length()-1 );
+    }
 }

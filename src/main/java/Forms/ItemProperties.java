@@ -82,7 +82,10 @@ public class ItemProperties extends InmanPanel {
             public void actionPerformed(ActionEvent e) {
                 ItemResponse responsePackage = null;
                 var itemAddRequest = new ItemAddRequest(
-                        summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
+                        summaryId.getText(),
+                        description.getText(),
+                        Double.parseDouble(unitCost.getText()),
+                        Item.SOURCE_PUR );
 
                 var errorMessages = itemAddRequestVerifier(itemAddRequest);
                 if (errorMessages.isPresent()) {

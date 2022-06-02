@@ -4,7 +4,7 @@ import Application.*;
 import Verifiers.*;
 import com.inman.entity.Item;
 import com.inman.model.request.BomSearchRequest;
-import com.inman.model.response.BomResponse;
+import com.inman.model.response.BomPresentResponse;
 import com.inman.model.response.ItemResponse;
 import com.inman.model.rest.ErrorLine;
 import com.inman.model.rest.ItemAddRequest;
@@ -26,6 +26,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
     JTextField summaryId = Utility.createTextField("Summary Id");
     JTextField description = Utility.createTextField("Description");
     JTextField unitCost = Utility.createTextField("Unit Cost");
+    JTextField sourcing = Utility.createTextField("Sourcing");
 
     JButton clearButton = new JButton("Clear");
     JButton saveButton = new JButton("Save");
@@ -37,6 +38,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
     DescriptionVerifier descriptionVerifier = new DescriptionVerifier();
     CostVerifier costVerifier = new CostVerifier();
+    Sourcing sourcingVerifier = new Verifiers.Sourcing();
 
     ParentIdVerifier parentIdVerifier = new ParentIdVerifier();
     ChildIdVerifier childIdVerifier = new ChildIdVerifier();
@@ -44,7 +46,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
     DefaultTableModel tableModel = new DefaultTableModel();
 
-    BomResponse responsePackage = new BomResponse();
+    BomPresentResponse responsePackage = new BomPresentResponse();
 
 
     public ItemPropertiesWithBom() {
@@ -72,6 +74,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
         add(unitCost);
 
+        add(sourcing);
+
         add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
 
@@ -83,14 +87,19 @@ public class ItemPropertiesWithBom extends InmanPanel {
         buttonPanel.add(updateButton);
         add(buttonPanel);
 
+        add(Utility.labelMaker("Components", JLabel.TRAILING),
+                BorderLayout.LINE_START);
+
 
         JTable queryResults = new JTable(tableModel);
-        String[] columnNames = {idVerifier.getColumnHeader(),
-                parentIdVerifier.getColumnHeader(),
-                descriptionVerifier.getColumnHeader(),
+        String[] columnNames = {
                 childIdVerifier.getColumnHeader(),
+                summaryIdVerifier.getColumnHeader(),
                 descriptionVerifier.getColumnHeader(),
-                quantityPer.getColumnHeader()};
+                quantityPer.getColumnHeader(),
+                sourcingVerifier.getColumnHeader()
+        };
+
         for (String columnName : columnNames) {
             tableModel.addColumn(columnName);
         }
@@ -104,7 +113,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
             public void actionPerformed(ActionEvent e) {
                 ItemResponse responsePackage = null;
                 var itemAddRequest = new ItemAddRequest(
-                        summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
+                        summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
+                    Item.SOURCE_PUR );
 
                 var errorMessages = itemAddRequestVerifier(itemAddRequest);
                 if (errorMessages.isPresent()) {
@@ -262,8 +272,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
                     RestTemplate restTemplate = new RestTemplate();
                     BomSearchRequest bomSearchRequest = new BomSearchRequest();
                     bomSearchRequest.setIdToSearchFor( Long.parseLong( id.getText() ) );
-                    responsePackage = restTemplate.postForObject(completeUrl, bomSearchRequest, BomResponse.class);
-                    responsePackage = new BomResponse( responsePackage  );
+                    responsePackage = restTemplate.postForObject(completeUrl, bomSearchRequest, BomPresentResponse.class);
+                    responsePackage = new BomPresentResponse( responsePackage  );
                     errorText.clearError();
                 } catch (Exception e1) {
                     errorText.signalError(e1.toString());
@@ -312,8 +322,9 @@ public class ItemPropertiesWithBom extends InmanPanel {
         var numRows = responsePackage.getData().length;
 
         for (int row = 0; row < numRows; row++) {
-            var bom = (com.inman.entity.Bom) responsePackage.getData()[row];
-            tableModel.insertRow(row, new Object[]{bom.getId(), bom.getParentId(), "ParentId", bom.getChildId(), "childid", bom.getQuantityPer() });
+            var bom = (com.inman.entity.BomPresent) responsePackage.getData()[row];
+            tableModel.insertRow(row, new Object[] {
+                    bom.getChildId(), bom.getChildSummary(), "Description", bom.getQuantityPer() });
         }
     }
 }
