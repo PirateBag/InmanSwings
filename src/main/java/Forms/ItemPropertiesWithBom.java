@@ -114,7 +114,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 ItemResponse responsePackage = null;
                 var itemAddRequest = new ItemAddRequest(
                         summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
-                    Item.SOURCE_PUR );
+                    sourcing.getText() );
 
                 var errorMessages = itemAddRequestVerifier(itemAddRequest);
                 if (errorMessages.isPresent()) {
@@ -149,7 +149,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 ItemResponse responsePackage = null;
 
                 var itemUpdateRequest = new ItemUpdateRequest(
-                        Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()));
+                        Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
+                        sourcing.getText());
 
                 var errorMessages = itemUpdateRequestVerifier( itemUpdateRequest);
                 if (errorMessages.isPresent()) {
@@ -219,6 +220,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         summaryIdVerifier.validateValueDomain( errorMessages, itemAddRequest.getSummaryId() );
         descriptionVerifier.validateValueDomain( errorMessages, itemAddRequest.getDescription() );
         costVerifier.validateValueDomain( errorMessages, itemAddRequest.getUnitCost());
+        sourcingVerifier.validateValueDomain( errorMessages,itemAddRequest.getSourcing() );
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
     }
@@ -238,6 +240,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         summaryIdVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getSummaryId() );
         descriptionVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getDescription() );
         costVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getUnitCost());
+        sourcingVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getSourcing() );
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
     }
@@ -247,6 +250,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         this.description.setText(DescriptionVerifier.defaultValue);
         this.summaryId.setText(SummaryIdVerifier.defaultValue);
         this.unitCost.setText(Double.toString(CostVerifier.defaultValue));
+        this.sourcing.setText( sourcingVerifier.defaultValue );
     }
 
     @Override

@@ -108,7 +108,7 @@ public class ItemQuery extends InmanPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                NextAction action = new NextAction("Add new item", ScreenTransitionType.PUSH, ItemProperties.class,
+                NextAction action = new NextAction("Add new item", ScreenTransitionType.PUSH, ItemPropertiesWithBom.class,
                         null, null, ScreenMode.ADD);
 
                 ScreenStateService.evaluate(action);

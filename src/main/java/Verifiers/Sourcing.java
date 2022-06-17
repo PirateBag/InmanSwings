@@ -6,6 +6,7 @@ import com.inman.entity.Item;
 import javax.swing.*;
 
 public class Sourcing extends DomainVerifier {
+	public String defaultValue = Item.SOURCE_PUR;
 	public Sourcing() {
 		validationRules = new ValidationRules(
 			"Sourcing", new String [] { Item.SOURCE_PUR, Item.SOURCE_MAN }, 3, 3, CaseConversion.UPPER,
