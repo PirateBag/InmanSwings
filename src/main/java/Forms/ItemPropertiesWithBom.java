@@ -26,7 +26,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
     JTextField summaryId = Utility.createTextField("Summary Id");
     JTextField description = Utility.createTextField("Description");
     JTextField unitCost = Utility.createTextField("Unit Cost");
-    JTextField sourcing = Utility.createTextField("Sourcing");
+    JComboBox sourcing;
 
     JButton clearButton = new JButton("Clear");
     JButton saveButton = new JButton("Save");
@@ -74,6 +74,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
         add(unitCost);
 
+        sourcing = sourcingVerifier.renderComponent();
+
         add(sourcing);
 
         add(Utility.labelMaker(" ", JLabel.TRAILING),
@@ -112,9 +114,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ItemResponse responsePackage = null;
+
                 var itemAddRequest = new ItemAddRequest(
                         summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
-                    sourcing.getText() );
+                        (String) sourcing.getSelectedItem());
 
                 var errorMessages = itemAddRequestVerifier(itemAddRequest);
                 if (errorMessages.isPresent()) {
@@ -150,7 +153,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
                 var itemUpdateRequest = new ItemUpdateRequest(
                         Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
-                        sourcing.getText());
+                        (String) sourcing.getSelectedItem());
 
                 var errorMessages = itemUpdateRequestVerifier( itemUpdateRequest);
                 if (errorMessages.isPresent()) {
@@ -250,7 +253,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         this.description.setText(DescriptionVerifier.defaultValue);
         this.summaryId.setText(SummaryIdVerifier.defaultValue);
         this.unitCost.setText(Double.toString(CostVerifier.defaultValue));
-        this.sourcing.setText( sourcingVerifier.defaultValue );
+        this.sourcing.setSelectedIndex( 0 );
     }
 
     @Override
