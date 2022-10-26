@@ -22,10 +22,7 @@ public class Sourcing extends DomainVerifier {
 		return validationRules.doesComponentObeyRules( input );
 	}
 
-	public JComboBox renderComponent( ) {
-		var rValue = new JComboBox( validationRules.values );
-		return rValue;
-	}
+
 }
 
 

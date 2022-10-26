@@ -15,7 +15,7 @@ public class ValidationRules {
     private Double maxValue = Double.MAX_VALUE;;
     Class type = Object.class;
     private Optional<Object> preventThisValue = Optional.empty();
-    Object [] values;
+    public Object [] values;
 
 
     public ValidationRules( String xFieldName, int xMinLength, int xMaxLength, CaseConversion xCaseConversion, Optional<Object> xPreventThisValue ) {
@@ -206,5 +206,9 @@ public class ValidationRules {
         }
         returnValue = Utility.removeLastChar(returnValue);
         return returnValue;
+    }
+
+    public String[] valuesAsString() {
+        return (String[]) values;
     }
 }

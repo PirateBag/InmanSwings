@@ -46,7 +46,18 @@ public class Utility {
         rValue.setBorder( titledBorder );
         return rValue;
 	}
-	
+
+	public static JComboBox createCombobox( Verifiers.Sourcing xVerifier  ) {
+		var validationRules = xVerifier.getValidationRules();
+		var rValue = new JComboBox<String>((String[]) validationRules.values);
+			var titledBorder = BorderFactory.createTitledBorder( blackLine, xVerifier.getColumnHeader() );
+		((TitledBorder) titledBorder).setTitleFont( labelFont );
+		rValue.setFont( textFont );
+		rValue.setMaximumSize( new Dimension( 400, 35) );
+		rValue.setBorder( titledBorder );
+		return rValue;
+	}
+
 	public static JTextField createErrorField( String xLabel ) {
 		var rValue = new JTextField();
         rValue.setFont( textFont );

@@ -2,10 +2,7 @@ package Forms;
 
 import Application.NextAction;
 import Application.*;
-import Verifiers.CostVerifier;
-import Verifiers.DescriptionVerifier;
-import Verifiers.IdVerifier;
-import Verifiers.SummaryIdVerifier;
+import Verifiers.*;
 import com.inman.business.QueryParameterException;
 import com.inman.entity.Item;
 import com.inman.model.response.ItemResponse;
@@ -28,6 +25,7 @@ public class ItemQuery extends InmanPanel {
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
     DescriptionVerifier descriptionVerifier = new DescriptionVerifier();
     CostVerifier costVerifier = new CostVerifier();
+    Sourcing sourcingVerifier = new Sourcing();
 
     public ItemQuery() {
         responsePackage.setData( new Item[ 0 ]);
@@ -74,7 +72,8 @@ public class ItemQuery extends InmanPanel {
         String[] columnNames = {idVerifier.getColumnHeader(),
                 summaryIdVerifier.getColumnHeader(),
                 descriptionVerifier.getColumnHeader(),
-                costVerifier.getColumnHeader()};
+                costVerifier.getColumnHeader(),
+                sourcingVerifier.getColumnHeader() } ;
         for (String columnName : columnNames) {
             tableModel.addColumn(columnName);
         }
@@ -172,7 +171,7 @@ public class ItemQuery extends InmanPanel {
 
         for (int row = 0; row < numRows; row++) {
             var item = (Item) responsePackage.getData()[row];
-            tableModel.insertRow(row, new Object[]{item.getId(), item.getSummaryId(), item.getDescription(), item.getUnitCost() });
+            tableModel.insertRow(row, new Object[]{item.getId(), item.getSummaryId(), item.getDescription(), item.getUnitCost(), item.getSourcing() });
         }
     }
 
