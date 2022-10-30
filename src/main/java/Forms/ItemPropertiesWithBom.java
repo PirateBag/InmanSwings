@@ -5,6 +5,7 @@ import Verifiers.*;
 import com.inman.entity.ActivityState;
 import com.inman.entity.Item;
 import com.inman.model.request.BomSearchRequest;
+import com.inman.model.request.BomUpdate;
 import com.inman.model.response.BomResponse;
 import com.inman.model.response.ItemResponse;
 import com.inman.model.rest.ErrorLine;
@@ -91,7 +92,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         buttonPanel.add(updateButton);
         add(buttonPanel);
 
-        add( Utility.subTitleMaker("Components" ) );
+        add(Utility.subTitleMaker("Components", JLabel.TRAILING), BorderLayout.LINE_START);
 
         String[] columnNames = {
                 childIdVerifier.getColumnHeader(),
@@ -174,9 +175,9 @@ public class ItemPropertiesWithBom extends InmanPanel {
                         RestTemplate restTemplate = new RestTemplate();
                         responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
 
-                        var updatedComponents(  componentResponse.getListOfUpdatedComponents() ) {
-
-                        }
+                        var componentsToUpdate = componentResponse.getArrayOfUpdatedComponents( ActivityState.CHANGE );
+                        completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
+                        var componentResponse = restTemplate.postForObject( completeUrl, componentsToUpdate, BomResponse.class );
 
                         errorText.clearError();
                     } catch (Exception e1) {
