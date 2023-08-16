@@ -15,8 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,8 +30,13 @@ public class ItemPropertiesWithBom extends InmanPanel {
     JComboBox sourcing;
 
     JButton clearButton = new JButton("Clear");
-    JButton saveButton = new JButton("Save");
-    JButton cancelButton = new JButton("Cancel & Return");
+    Icon saveIcon = new ImageIcon("gui/icons/done_FILL0_wght400_GRAD0_opsz48.png");
+    JButton saveButton = new JButton(saveIcon);
+
+    Icon closeIcon = new ImageIcon("gui/icons/close_FILL0_wght400_GRAD0_opsz48.png");
+
+    JButton cancelButton = new JButton(closeIcon);
+
     JButton updateButton = new JButton("Update");
 
     IdVerifier idVerifier = new IdVerifier();
@@ -44,13 +47,14 @@ public class ItemPropertiesWithBom extends InmanPanel {
     ParentIdVerifier parentIdVerifier = new ParentIdVerifier();
     ChildIdVerifier childIdVerifier = new ChildIdVerifier();
     QuantityPer quantityPer = new QuantityPer();
-    CostVerifier extendedCost = new CostVerifier( "Extended Cost", "Extended Cost" );
+    CostVerifier extendedCost = new CostVerifier("Extended Cost", "Extended Cost");
 
+    JLabel componentsHeader;
     BomChildGrid bomChildGrid;
     NextAction action;
 
-    BomResponse componentResponse = new BomResponse();
-
+    BomResponse componentResponse = null;
+    JTable bomChildTable;
 
     public ItemPropertiesWithBom() {
 
@@ -70,14 +74,14 @@ public class ItemPropertiesWithBom extends InmanPanel {
         add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
 
-        summaryId.setInputVerifier( summaryIdVerifier );
+        summaryId.setInputVerifier(summaryIdVerifier);
         add(summaryId);
 
         add(description);
 
         add(unitCost);
 
-        sourcing = Utility.createCombobox( sourcingVerifier );
+        sourcing = Utility.createCombobox(sourcingVerifier);
 
         add(sourcing);
 
@@ -92,7 +96,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
         buttonPanel.add(updateButton);
         add(buttonPanel);
 
-        add(Utility.subTitleMaker("Components", JLabel.TRAILING), BorderLayout.LINE_START);
 
         String[] columnNames = {
                 childIdVerifier.getColumnHeader(),
@@ -102,24 +105,15 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 quantityPer.getColumnHeader(),
                 extendedCost.getColumnHeader()
         };
-        bomChildGrid = new BomChildGrid( columnNames );
-        JTable queryResults = new JTable(bomChildGrid);
-        bomChildGrid.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                var updatedRow = bomChildGrid.getWhileRowAt( e.getFirstRow() );
-                updatedRow.setActivityState( ActivityState.CHANGE );
-                componentResponse.getData()[ e.getFirstRow() ] = updatedRow;
-                unitCost.setText( String.valueOf( getParentUnitCost( componentResponse ) ) );
-            }
-        } );
+        bomChildGrid = new BomChildGrid(columnNames, this  );
+        bomChildTable = new JTable(bomChildGrid);
 
-        queryResults.setFillsViewportHeight(true);
+        componentsHeader = Utility.subTitleMaker("Components", JLabel.TRAILING);
+        add(componentsHeader);
+        add(new JScrollPane(bomChildTable));
 
-
-        add(new JScrollPane(queryResults));
-
-
+        showComponents();
+        ScreenStateService.primaryPanel.add(this);
         //noinspection Convert2Lambda
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -146,12 +140,12 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
                 if ((responsePackage != null) && (responsePackage.getErrors().size() > 0)) {
                     ArrayList<ErrorLine> errorLines = responsePackage.getErrors();
-                    errorText.signalError( errorLines.get(0).getMessage() );
+                    errorText.signalError(errorLines.get(0).getMessage());
                 }
 
                 if (errorText.hasNoError()) {
                     ScreenStateService.evaluate(new NextAction(
-                            "Added Item " + itemAddRequest.getSummaryId(), responsePackage ) );
+                            "Added Item " + itemAddRequest.getSummaryId(), responsePackage));
                 }
             }
         });
@@ -166,7 +160,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
                         Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
                         (String) sourcing.getSelectedItem());
 
-                var errorMessages = itemUpdateRequestVerifier( itemUpdateRequest);
+                var errorMessages = itemUpdateRequestVerifier(itemUpdateRequest);
                 if (errorMessages.isPresent()) {
                     errorText.signalError(errorMessages.get());
                 } else {
@@ -175,9 +169,11 @@ public class ItemPropertiesWithBom extends InmanPanel {
                         RestTemplate restTemplate = new RestTemplate();
                         responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
 
-                        var componentsToUpdate = componentResponse.getArrayOfUpdatedComponents( ActivityState.CHANGE );
-                        completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
-                        var componentResponse = restTemplate.postForObject( completeUrl, componentsToUpdate, BomResponse.class );
+                        var componentsToUpdate = componentResponse.getArrayOfUpdatedComponents(ActivityState.CHANGE);
+                        if (componentsToUpdate.length > 0) {
+                            completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
+                            var componentResponse = restTemplate.postForObject(completeUrl, componentsToUpdate, BomResponse.class);
+                        }
 
                         errorText.clearError();
                     } catch (Exception e1) {
@@ -186,12 +182,12 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 }
 
                 if (responsePackage != null && responsePackage.getErrors().size() > 0) {
-                    errorText.signalError(((ErrorLine) responsePackage.getErrors().get( 0 )).getMessage());
+                    errorText.signalError(((ErrorLine) responsePackage.getErrors().get(0)).getMessage());
                 }
 
                 if (errorText.hasNoError()) {
                     ScreenStateService.evaluate(new NextAction(
-                            "Updated Item " + itemUpdateRequest.getSummaryId(), responsePackage ));
+                            "Updated Item " + itemUpdateRequest.getSummaryId(), responsePackage));
                 }
             }
         });
@@ -221,16 +217,30 @@ public class ItemPropertiesWithBom extends InmanPanel {
             }
         });
 
-        ScreenStateService.primaryPanel.add(this);
+
     }
 
-    private double getParentUnitCost( BomResponse xComponents ) {
-        double parentUnitCost = 0.0;
-        for (int index = 0; index < xComponents.getData().length; index ++ ) {
-            parentUnitCost += xComponents.getData()[ index ].getExtendedCost();
+    /**
+     * Set the visibility of the component list based on the existance of components.
+     * Called when panel is contructed and whenver updated with components.
+     */
+    private void showComponents() {
+
+        if (componentResponse == null || componentResponse.getData().length == 0) {
+            componentsHeader.setText( "This Item has no components.");
+            bomChildTable.setFillsViewportHeight(false);
+            bomChildTable.setVisible(false);
+
+           return;
         }
-        return parentUnitCost;
+        bomChildGrid.recomputeParentUnitCost();
+        componentsHeader.setText( "Components of Item.");
+        bomChildTable.setFillsViewportHeight(false);
+        bomChildTable.setVisible(true);
+
     }
+
+
 
     /**
      * Validate the fields of the ItemAddRequest, for use with Save button.
@@ -244,10 +254,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
         //  Multiple messages will likely be implemented as verification is extended to all fields.
         StringBuilder errorMessages = new StringBuilder();
 
-        summaryIdVerifier.validateValueDomain( errorMessages, itemAddRequest.getSummaryId() );
-        descriptionVerifier.validateValueDomain( errorMessages, itemAddRequest.getDescription() );
-        costVerifier.validateValueDomain( errorMessages, itemAddRequest.getUnitCost());
-        sourcingVerifier.validateValueDomain( errorMessages,itemAddRequest.getSourcing() );
+        summaryIdVerifier.validateValueDomain(errorMessages, itemAddRequest.getSummaryId());
+        descriptionVerifier.validateValueDomain(errorMessages, itemAddRequest.getDescription());
+        costVerifier.validateValueDomain(errorMessages, itemAddRequest.getUnitCost());
+        sourcingVerifier.validateValueDomain(errorMessages, itemAddRequest.getSourcing());
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
     }
@@ -264,10 +274,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
         //  Multiple messages will likely be implemented as verification is extended to all fields.
         StringBuilder errorMessages = new StringBuilder();
 
-        summaryIdVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getSummaryId() );
-        descriptionVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getDescription() );
-        costVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getUnitCost());
-        sourcingVerifier.validateValueDomain( errorMessages, xItemUpdateRequest.getSourcing() );
+        summaryIdVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getSummaryId());
+        descriptionVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getDescription());
+        costVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getUnitCost());
+        sourcingVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getSourcing());
 
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
@@ -278,7 +288,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         this.description.setText(DescriptionVerifier.defaultValue);
         this.summaryId.setText(SummaryIdVerifier.defaultValue);
         this.unitCost.setText(Double.toString(CostVerifier.defaultValue));
-        this.sourcing.setSelectedIndex( 0 );
+        this.sourcing.setSelectedIndex(0);
     }
 
     @Override
@@ -290,8 +300,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 setDefaultValues();
                 clearButton.setText("Clear");
                 title.setText("Add Item");
-                saveButton.setVisible( true );
-                updateButton.setVisible( false );
+                saveButton.setVisible(true);
+                updateButton.setVisible(false);
                 break;
 
             case CHANGE:
@@ -303,16 +313,18 @@ public class ItemPropertiesWithBom extends InmanPanel {
                     String completeUrl = "http://localhost:8080/" + BomSearchRequest.findByParent;
                     RestTemplate restTemplate = new RestTemplate();
                     BomSearchRequest bomSearchRequest = new BomSearchRequest();
-                    bomSearchRequest.setIdToSearchFor( Long.parseLong( id.getText() ) );
+                    bomSearchRequest.setIdToSearchFor(Long.parseLong(id.getText()));
+
                     componentResponse = restTemplate.postForObject(completeUrl, bomSearchRequest, BomResponse.class);
                     errorText.clearError();
+
                 } catch (Exception e1) {
                     errorText.signalError(e1.toString());
                 }
-                bomChildGrid.initializeRows( componentResponse.getData() );
-
-                saveButton.setVisible( false  );
-                updateButton.setVisible( true );
+                bomChildGrid.initializeRows(componentResponse.getData());
+                showComponents();
+                saveButton.setVisible(false);
+                updateButton.setVisible(true);
                 break;
         }
 
@@ -329,19 +341,19 @@ public class ItemPropertiesWithBom extends InmanPanel {
         }
 
         if (itemToBeModified != null) {
-            id.setText( Long.toString(itemToBeModified.getId() ) );
+            id.setText(Long.toString(itemToBeModified.getId()));
             summaryId.setText(itemToBeModified.getSummaryId());
             description.setText(itemToBeModified.getDescription());
             unitCost.setText(Double.toString(itemToBeModified.getUnitCost()));
-            for ( int i = 0 ; i < sourcingVerifier.getValidationRules().values.length; i++ ) {
-                if ( itemToBeModified.getSourcing().equals(sourcingVerifier.getValidationRules().values[ i ])) {
+            for (int i = 0; i < sourcingVerifier.getValidationRules().values.length; i++) {
+                if (itemToBeModified.getSourcing().equals(sourcingVerifier.getValidationRules().values[i])) {
                     sourcing.setSelectedIndex(i);
                     break;
                 }
             }
-            id.setVisible( true );
+            id.setVisible(true);
         } else {
-            id.setVisible( false );
+            id.setVisible(false);
         }
     }
 }

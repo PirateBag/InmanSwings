@@ -1,16 +1,42 @@
 package Forms;
 
+import com.inman.entity.ActivityState;
 import com.inman.entity.BomPresent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import java.util.Arrays;
 
+
 public class BomChildGrid extends AbstractTableModel {
+    static Logger logger = LoggerFactory.getLogger( "controller: " + BomChildGrid.class );
+
     private String[] columnNames;
     private Object[][] data;
 
-    public BomChildGrid(String [] xColumnNames ) {
+    private final ItemPropertiesWithBom itemPropertiesWithBom;
+
+
+
+    public BomChildGrid(String [] xColumnNames, ItemPropertiesWithBom xItemPropertiesWithBom ) {
         columnNames = xColumnNames;
+        itemPropertiesWithBom = xItemPropertiesWithBom;
+
+
+        addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                var updatedRow = getWhileRowAt(e.getFirstRow());
+                updatedRow.setActivityState(ActivityState.CHANGE);
+                recomputeParentUnitCost();
+                xItemPropertiesWithBom.componentResponse.getData()[e.getFirstRow()] = updatedRow;
+
+            }
+        });
+
     }
 
     public int getColumnCount() {
@@ -51,7 +77,7 @@ public class BomChildGrid extends AbstractTableModel {
         data[row][col] = value;
 
         if ( col == 4 ) {
-            BomPresent bom = columnsToObject( data[ row ] );
+            BomPresent bom = getWhileRowAt( row );
             data[row] = objectToColumns( bom );
         }
 
@@ -90,53 +116,26 @@ public class BomChildGrid extends AbstractTableModel {
         return columns;
     }
 
-    public BomPresent columnsToObject( Object[] xData ) {
-        var bom = new BomPresent();
-        bom.setChildId((Long) xData[ 0 ]); ;
-        bom.setChildSummary( xData[ 1 ] );
-        bom.setChildDescription( xData[ 2 ] );
-        bom.setUnitCost((Double) xData[ 3 ]);
-        bom.setQuantityPer((Double) xData[ 4 ]);
+    public BomPresent getWhileRowAt( int row ) {
+        var bom = new BomPresent( this.itemPropertiesWithBom.componentResponse.getData()[ row ] );
+
+        bom.setChildId( (Long) data[ row ][ 0 ]) ;
+        bom.setChildSummary( data[ row ][ 1 ] );
+        bom.setChildDescription( data[ row][ 2 ] );
+        bom.setUnitCost((Double) data[ row ][ 3 ]);
+        bom.setQuantityPer((Double) data[ row ][ 4 ]);
         //  Extended cost is omitted, as the getter calculates it.
         return bom;
     }
 
-    public BomPresent getWhileRowAt( int row ) {
-        var bom = columnsToObject( data[ row ]);
-        return bom;
-    }
-/*
-    public void updateBom() {
+    public void recomputeParentUnitCost() {
+        Double parentUnitCost = 0.0;
+        for (int index = 0; index < data.length; index++) {
+            var childRow = getWhileRowAt( index );
 
-    BomPresentResponse responsePackage = null;
-
-    Bom = new ItemUpdateRequest(
-            Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
-            (String) sourcing.getSelectedItem());
-
-    var errorMessages = itemUpdateRequestVerifier( itemUpdateRequest);
-                if (errorMessages.isPresent()) {
-        errorText.signalError(errorMessages.get());
-    } else {
-        try {
-            String completeUrl = "http://localhost:8080/" + ItemUpdateRequest.updateUrl;
-            RestTemplate restTemplate = new RestTemplate();
-            responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
-            errorText.clearError();
-        } catch (Exception e1) {
-            errorText.signalError(e1.toString());
-        }
-    }
-
-                if (responsePackage != null && responsePackage.getErrors().size() > 0) {
-        errorText.signalError(((ErrorLine) responsePackage.getErrors().get( 0 )).getMessage());
-    }
-
-                if (errorText.hasNoError()) {
-        ScreenStateService.evaluate(new NextAction(
-                "Updated Item " + itemUpdateRequest.getSummaryId(), responsePackage ));
+            parentUnitCost += childRow.getExtendedCost();
+      }
+        logger.info( "Rolled up " + data.length + " children to get cost of " + parentUnitCost );
+        itemPropertiesWithBom.unitCost.setText( Double.toString( parentUnitCost ) );
     }
 }
-        });
-*/
-                }

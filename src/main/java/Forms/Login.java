@@ -1,6 +1,7 @@
 package Forms;
 
 import Application.*;
+import Buttons.LoginButton;
 import com.inman.model.User;
 import com.inman.model.rest.StatusResponse;
 import com.inman.model.rest.VerifyCredentialsRequest;
@@ -40,7 +41,7 @@ public class Login extends InmanPanel {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-        var button = new JButton("Login");
+        var button = new LoginButton(  );
         buttonPanel.add(button);
         button.addActionListener(new ActionListener() {
             @Override

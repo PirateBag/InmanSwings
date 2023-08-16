@@ -1,7 +1,10 @@
 package Forms;
 
-import Application.NextAction;
 import Application.*;
+import Buttons.AddButton;
+import Buttons.EditLargeButton;
+import Buttons.ExitLargeButton;
+import Buttons.SearchButton;
 import Verifiers.*;
 import com.inman.business.QueryParameterException;
 import com.inman.entity.Item;
@@ -52,16 +55,16 @@ public class ItemQuery extends InmanPanel {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
-        var searchButton = new JButton("Search");
+        var searchButton = new SearchButton();
         buttonPanel.add(searchButton);
 
-        var exitButton = new JButton("Exit");
+        var exitButton = new ExitLargeButton( );
         buttonPanel.add(exitButton);
 
-        var addButton = new JButton("Add");
+        var addButton = new AddButton();
         buttonPanel.add(addButton);
 
-        var editButton = new JButton("Edit");
+        var editButton = new EditLargeButton();
         buttonPanel.add(editButton);
         add(buttonPanel);
 
@@ -191,5 +194,7 @@ public class ItemQuery extends InmanPanel {
         responsePackage = new ItemResponse( responsePackage.mergeAnotherResponse( xAction.getResponsePackage()  ) );
         createTableModelFromResponsePackage();
     }
+
+
 
 }
