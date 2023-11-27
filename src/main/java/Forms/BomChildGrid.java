@@ -1,6 +1,5 @@
 package Forms;
 
-import com.inman.entity.ActivityState;
 import com.inman.entity.BomPresent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ public class BomChildGrid extends AbstractTableModel {
             @Override
             public void tableChanged(TableModelEvent e) {
                 var updatedRow = getWhileRowAt(e.getFirstRow());
-                updatedRow.setActivityState(ActivityState.CHANGE);
                 recomputeParentUnitCost();
                 xItemPropertiesWithBom.componentResponse.getData()[e.getFirstRow()] = updatedRow;
 
@@ -44,7 +42,7 @@ public class BomChildGrid extends AbstractTableModel {
     }
 
     public int getRowCount() {
-        return data.length;
+        return data == null ? 0 : data.length;
     }
 
     public String getColumnName(int col) {
@@ -66,7 +64,7 @@ public class BomChildGrid extends AbstractTableModel {
     public boolean isCellEditable(int row, int col) {
         //Note that the data/cell address is constant,
         //no matter where the cell appears onscreen.
-        return (col == 4);
+        return (col == 0 || col == 4);
     }
 
     /*
@@ -75,12 +73,13 @@ public class BomChildGrid extends AbstractTableModel {
      */
     public void setValueAt(Object value, int row, int col) {
         data[row][col] = value;
-
+        BomPresent bom = getWhileRowAt( row );
+        if ( col == 0 ) {
+            data[ row ] = objectToColumns( bom );
+        }
         if ( col == 4 ) {
-            BomPresent bom = getWhileRowAt( row );
             data[row] = objectToColumns( bom );
         }
-
         fireTableCellUpdated(row, col);
     }
 

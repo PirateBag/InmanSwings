@@ -51,9 +51,9 @@ public class NextAction {
 	}
 
 
-	public NextAction(String xActionName, ResponsePackage xResponsePackage ) {
+	public NextAction(String xActionName, ScreenTransitionType xScreenTransitionType, ResponsePackage xResponsePackage ) {
 		actionName = xActionName;
-		screenTransitionType = ScreenTransitionType.POP;
+		screenTransitionType = xScreenTransitionType;
 		responsePackage = xResponsePackage;
 	}
 

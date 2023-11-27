@@ -7,7 +7,6 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +39,18 @@ public class Utility {
 	public static JTextField createTextField( String xLabel ) {
 		var rValue = new JTextField();
         var titledBorder = BorderFactory.createTitledBorder( blackLine, xLabel );
-        ((TitledBorder) titledBorder).setTitleFont( labelFont );
+        titledBorder.setTitleFont( labelFont );
         rValue.setFont( textFont );
         rValue.setMaximumSize( new Dimension( 400, 35) );
         rValue.setBorder( titledBorder );
         return rValue;
 	}
 
-	public static JComboBox createCombobox( Verifiers.Sourcing xVerifier  ) {
+	public static JComboBox<String> createCombobox( Verifiers.Sourcing xVerifier  ) {
 		var validationRules = xVerifier.getValidationRules();
-		var rValue = new JComboBox<String>((String[]) validationRules.values);
+		var rValue = new JComboBox<>((String[]) validationRules.values);
 			var titledBorder = BorderFactory.createTitledBorder( blackLine, xVerifier.getColumnHeader() );
-		((TitledBorder) titledBorder).setTitleFont( labelFont );
+		titledBorder.setTitleFont( labelFont );
 		rValue.setFont( textFont );
 		rValue.setMaximumSize( new Dimension( 400, 35) );
 		rValue.setBorder( titledBorder );
@@ -95,7 +94,7 @@ public class Utility {
 		} catch ( RestClientException e ) {
 			System.out.println( "Application Service is down:  " + e.getMessage() );
 		} catch ( Exception e ) {
-			System.out.println( "A more spectaular error occurred while checking server status:  " + e.getMessage() );
+			System.out.println( "A more spectacular error occurred while checking server status:  " + e.getMessage() );
 		}
 		return false;
 	}
@@ -103,7 +102,7 @@ public class Utility {
 	//Move to Common
 	private static List<HttpMessageConverter<?>> getMessageConverters() {
 		List<HttpMessageConverter<?>> converters =
-				new ArrayList<HttpMessageConverter<?>>();
+				new ArrayList<>();
 		converters.add(new MappingJackson2HttpMessageConverter());
 		return converters;
 	}
@@ -119,10 +118,9 @@ public class Utility {
 	}
 
 	/**
-	 * Trim the lasst character from the input string.
+	 * Trim the last character from the input string.
 	 * No bad input checking.
 	 *
-	 * @param oneCharacterTooMany
 	 * @return allButTheLastCharacter;
 	 */
     public static String removeLastChar(String oneCharacterTooMany ) {

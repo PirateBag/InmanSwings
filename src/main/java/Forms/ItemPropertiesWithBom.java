@@ -1,8 +1,10 @@
 package Forms;
 
 import Application.*;
+import Buttons.AddButton;
 import Verifiers.*;
 import com.inman.entity.ActivityState;
+import com.inman.entity.BomPresent;
 import com.inman.entity.Item;
 import com.inman.model.request.BomSearchRequest;
 import com.inman.model.request.BomUpdate;
@@ -19,15 +21,16 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Optional;
 
 public class ItemPropertiesWithBom extends InmanPanel {
-    JLabel title = Utility.titleMaker("Add Item ");
+    protected JLabel title = Utility.titleMaker("Add Item ");
     JTextField id = Utility.createTextField("Id");
     JTextField summaryId = Utility.createTextField("Summary Id");
     JTextField description = Utility.createTextField("Description");
     JTextField unitCost = Utility.createTextField("Unit Cost");
-    JComboBox sourcing;
+    protected JComboBox<String> sourcing;
 
     JButton clearButton = new JButton("Clear");
     Icon saveIcon = new ImageIcon("gui/icons/done_FILL0_wght400_GRAD0_opsz48.png");
@@ -38,6 +41,9 @@ public class ItemPropertiesWithBom extends InmanPanel {
     JButton cancelButton = new JButton(closeIcon);
 
     JButton updateButton = new JButton("Update");
+
+    JButton addButton = new AddButton( );
+
 
     IdVerifier idVerifier = new IdVerifier();
     SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
@@ -55,6 +61,72 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
     BomResponse componentResponse = null;
     JTable bomChildTable;
+
+    private class AddButtonActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            BomPresent[] extendedArray = Arrays.copyOf( componentResponse.getData(), componentResponse.getData().length+1  );
+            componentResponse.setData( extendedArray );
+            int positionOfNewItem = componentResponse.getData().length -1;
+
+            BomPresent emptyNewElement = new BomPresent();
+            emptyNewElement.setChildId( 999 );
+            emptyNewElement.setQuantityPer( 1.0 );
+            emptyNewElement.setChildSummary( "No child selected");
+            emptyNewElement.setParentId(   Long.parseLong(id.getText()));
+            emptyNewElement.setUnitCost( 0.0 );
+            emptyNewElement.setActivityState( ActivityState.INSERT );
+            componentResponse.getData()[ positionOfNewItem ] = emptyNewElement;
+            bomChildGrid.initializeRows(componentResponse.getData());
+            showComponents();
+        }
+    }
+
+      private class oldUpdateButtonListener implements ActionListener  {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ItemResponse responsePackage = null;
+
+            var itemUpdateRequest = new ItemUpdateRequest(
+                    Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
+                    (String) sourcing.getSelectedItem());
+
+            var errorMessages = itemUpdateRequestVerifier(itemUpdateRequest);
+            if (errorMessages.isPresent()) {
+                errorText.signalError(errorMessages.get());
+            } else {
+                try {
+                    String completeUrl = "http://localhost:8080/" + ItemUpdateRequest.updateUrl;
+                    RestTemplate restTemplate = new RestTemplate();
+                    responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
+
+                    var componentsToUpdate = componentResponse.getArrayOfUpdatedComponents();
+                    if (componentsToUpdate.length > 0) {
+                        completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
+                        componentResponse = restTemplate.postForObject(completeUrl, componentsToUpdate, BomResponse.class);
+                    }
+                    errorText.clearError();
+                } catch (Exception e1) {
+                    errorText.signalError(e1.toString());
+                }
+            }
+
+            if (responsePackage != null && responsePackage.getErrors().size() > 0) {
+                errorText.signalError(( responsePackage.getErrors().get(0)).getMessage());
+            }
+            /*
+            if (errorText.hasNoError()) {
+                ScreenStateService.evaluate(new NextAction(
+                        "Updated Item" + itemUpdateRequest.getSummaryId(),
+                         ScreenTransitionType.REPLACE, responsePackage));
+
+            }
+
+             */
+        }
+    }
+
 
     public ItemPropertiesWithBom() {
 
@@ -93,7 +165,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
         buttonPanel.add(clearButton);
-        buttonPanel.add(updateButton);
+        buttonPanel.add( updateButton );
+        buttonPanel.add(addButton);
         add(buttonPanel);
 
 
@@ -114,6 +187,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
         showComponents();
         ScreenStateService.primaryPanel.add(this);
+
+        updateButton.addActionListener( new oldUpdateButtonListener() );
         //noinspection Convert2Lambda
         saveButton.addActionListener(new ActionListener() {
             @Override
@@ -145,53 +220,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
                 if (errorText.hasNoError()) {
                     ScreenStateService.evaluate(new NextAction(
-                            "Added Item " + itemAddRequest.getSummaryId(), responsePackage));
+                            "Added Item " + itemAddRequest.getSummaryId(), ScreenTransitionType.REPLACE, responsePackage));
                 }
             }
         });
-
-        //noinspection Convert2Lambda
-        updateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                ItemResponse responsePackage = null;
-
-                var itemUpdateRequest = new ItemUpdateRequest(
-                        Long.parseLong(id.getText()), summaryId.getText(), description.getText(), Double.parseDouble(unitCost.getText()),
-                        (String) sourcing.getSelectedItem());
-
-                var errorMessages = itemUpdateRequestVerifier(itemUpdateRequest);
-                if (errorMessages.isPresent()) {
-                    errorText.signalError(errorMessages.get());
-                } else {
-                    try {
-                        String completeUrl = "http://localhost:8080/" + ItemUpdateRequest.updateUrl;
-                        RestTemplate restTemplate = new RestTemplate();
-                        responsePackage = restTemplate.postForObject(completeUrl, itemUpdateRequest, ItemResponse.class);
-
-                        var componentsToUpdate = componentResponse.getArrayOfUpdatedComponents(ActivityState.CHANGE);
-                        if (componentsToUpdate.length > 0) {
-                            completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
-                            var componentResponse = restTemplate.postForObject(completeUrl, componentsToUpdate, BomResponse.class);
-                        }
-
-                        errorText.clearError();
-                    } catch (Exception e1) {
-                        errorText.signalError(e1.toString());
-                    }
-                }
-
-                if (responsePackage != null && responsePackage.getErrors().size() > 0) {
-                    errorText.signalError(((ErrorLine) responsePackage.getErrors().get(0)).getMessage());
-                }
-
-                if (errorText.hasNoError()) {
-                    ScreenStateService.evaluate(new NextAction(
-                            "Updated Item " + itemUpdateRequest.getSummaryId(), responsePackage));
-                }
-            }
-        });
-
 
         //noinspection Convert2Lambda
         cancelButton.addActionListener(new ActionListener() {
@@ -217,12 +249,13 @@ public class ItemPropertiesWithBom extends InmanPanel {
             }
         });
 
+        addButton.addActionListener( new AddButtonActionListener() );
 
     }
 
     /**
-     * Set the visibility of the component list based on the existance of components.
-     * Called when panel is contructed and whenver updated with components.
+     * Set the visibility of the component list based on the existence of components.
+     * Called when panel is constructed and whenever updated with components.
      */
     private void showComponents() {
 
@@ -323,7 +356,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
                 }
                 bomChildGrid.initializeRows(componentResponse.getData());
                 showComponents();
-                saveButton.setVisible(false);
+                saveButton.setVisible( true );
                 updateButton.setVisible(true);
                 break;
         }
@@ -356,4 +389,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
             id.setVisible(false);
         }
     }
+
+
+
 }
