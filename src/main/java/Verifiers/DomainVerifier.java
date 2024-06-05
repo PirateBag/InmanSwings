@@ -33,7 +33,6 @@ public class DomainVerifier extends InputVerifier {
      * Verify that a string matches the verification rules of the specified domain.
      * Side effect:  add new verification to errorMessages
      * @param errorMessages
-     * @param xDomainVerifier
      * @param xValueToBeVerified
      */
     public void validateValueDomain(StringBuilder errorMessages, String xValueToBeVerified ) {
@@ -49,10 +48,10 @@ public class DomainVerifier extends InputVerifier {
         }
     }
 
-    public JTextField getJTextField () {
+    public JTextField getJTextField ( ) {
         return Utility.createTextField(rowHeader);
     }
-
+    public JTextField getJTextField (String label ) { return Utility.createTextField( label  ); }
     public ValidationRules getValidationRules() {
         return validationRules;
     }

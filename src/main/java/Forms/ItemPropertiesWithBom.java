@@ -10,6 +10,7 @@ import com.inman.model.request.BomSearchRequest;
 import com.inman.model.request.BomUpdate;
 import com.inman.model.response.BomResponse;
 import com.inman.model.response.ItemResponse;
+import com.inman.model.response.ResponsePackage;
 import com.inman.model.rest.ErrorLine;
 import com.inman.model.rest.ItemAddRequest;
 import com.inman.model.rest.ItemUpdateRequest;
@@ -24,36 +25,32 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static Application.ScreenTransitionType.POP;
+
 public class ItemPropertiesWithBom extends InmanPanel {
     protected JLabel title = Utility.titleMaker("Add Item ");
     JTextField id = Utility.createTextField("Id");
     JTextField summaryId = Utility.createTextField("Summary Id");
     JTextField description = Utility.createTextField("Description");
     JTextField unitCost = Utility.createTextField("Unit Cost");
-    protected JComboBox<String> sourcing;
 
-    JButton clearButton = new JButton("Clear");
-    Icon saveIcon = new ImageIcon("gui/icons/done_FILL0_wght400_GRAD0_opsz48.png");
+    JTextField maxDepth = Utility.createTextField( "Max Depth" );
+     protected JComboBox<String> sourcing;
+
+    ImageIcon clearIcon = new ImageIcon("gui/icons/undo_FILL0_wght400_GRAD0_opsz24.png");
+    JButton clearButton = new JButton( clearIcon);
+
+    ImageIcon saveIcon = new ImageIcon("gui/icons/done_FILL0_wght400_GRAD0_opsz24.png");
+
     JButton saveButton = new JButton(saveIcon);
 
-    Icon closeIcon = new ImageIcon("gui/icons/close_FILL0_wght400_GRAD0_opsz48.png");
+    Icon closeIcon = new ImageIcon("gui/icons/close_FILL0_wght400_GRAD0_opsz24.png");
 
     JButton cancelButton = new JButton(closeIcon);
 
     JButton updateButton = new JButton("Update");
 
     JButton addButton = new AddButton( );
-
-
-    IdVerifier idVerifier = new IdVerifier();
-    SummaryIdVerifier summaryIdVerifier = new SummaryIdVerifier();
-    DescriptionVerifier descriptionVerifier = new DescriptionVerifier();
-    CostVerifier costVerifier = new CostVerifier();
-    Sourcing sourcingVerifier = new Verifiers.Sourcing();
-    ParentIdVerifier parentIdVerifier = new ParentIdVerifier();
-    ChildIdVerifier childIdVerifier = new ChildIdVerifier();
-    QuantityPer quantityPer = new QuantityPer();
-    CostVerifier extendedCost = new CostVerifier("Extended Cost", "Extended Cost");
 
     JLabel componentsHeader;
     BomChildGrid bomChildGrid;
@@ -62,7 +59,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
     BomResponse componentResponse = null;
     JTable bomChildTable;
 
-    private class AddButtonActionListener implements ActionListener {
+    private class oldAddButtonActionListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
 
@@ -73,6 +70,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
             BomPresent emptyNewElement = new BomPresent();
             emptyNewElement.setChildId( 999 );
             emptyNewElement.setQuantityPer( 1.0 );
+            emptyNewElement.setChildDescription( "No child selected" );
             emptyNewElement.setChildSummary( "No child selected");
             emptyNewElement.setParentId(   Long.parseLong(id.getText()));
             emptyNewElement.setUnitCost( 0.0 );
@@ -83,7 +81,38 @@ public class ItemPropertiesWithBom extends InmanPanel {
         }
     }
 
-      private class oldUpdateButtonListener implements ActionListener  {
+    private class AddButtonActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            BomPresent emptyNewElement = new BomPresent();
+            emptyNewElement.setParentId( Long.valueOf( id.getText() ) );
+            emptyNewElement.setParentSummary( summaryId.getText() );
+            emptyNewElement.setParentDescription( description.getText() );
+            emptyNewElement.setChildId( 999 );
+            emptyNewElement.setQuantityPer( 1.0 );
+            emptyNewElement.setChildDescription( "No child selected" );
+            emptyNewElement.setChildSummary( "No child selected");
+            emptyNewElement.setParentId(   Long.parseLong(id.getText()));
+            emptyNewElement.setUnitCost( 0.0 );
+            emptyNewElement.setActivityState( ActivityState.INSERT );
+
+            ResponsePackage<BomPresent> responsePackage = new ResponsePackage<>();
+            BomPresent[ ] newElementArray  = new BomPresent[ 1 ];
+            newElementArray[ 0 ] = emptyNewElement;
+
+            responsePackage.setData( newElementArray );
+            ScreenStateService.evaluate(new NextAction(
+                        "Insert Component",
+                        ScreenTransitionType.PUSH,
+                        BomProperties.class,
+                        responsePackage,
+                    null,
+                    ScreenMode.ADD));
+        }
+    }
+
+
+    private class oldUpdateButtonListener implements ActionListener  {
         @Override
         public void actionPerformed(ActionEvent e) {
             ItemResponse responsePackage = null;
@@ -146,16 +175,18 @@ public class ItemPropertiesWithBom extends InmanPanel {
         add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
 
-        summaryId.setInputVerifier(summaryIdVerifier);
+        summaryId.setInputVerifier( VerifierLibrary.idVerifier );
         add(summaryId);
 
         add(description);
 
         add(unitCost);
 
-        sourcing = Utility.createCombobox(sourcingVerifier);
+        sourcing = Utility.createCombobox( VerifierLibrary.sourcing);
 
         add(sourcing);
+
+        add( maxDepth );
 
         add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
@@ -171,12 +202,12 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
 
         String[] columnNames = {
-                childIdVerifier.getColumnHeader(),
-                summaryIdVerifier.getColumnHeader(),
-                descriptionVerifier.getColumnHeader(),
-                costVerifier.getColumnHeader(),
-                quantityPer.getColumnHeader(),
-                extendedCost.getColumnHeader()
+                VerifierLibrary.childIdVerifier.getColumnHeader(),
+                VerifierLibrary.summaryIdVerifier.getColumnHeader(),
+                VerifierLibrary.descriptionVerifier.getColumnHeader(),
+                VerifierLibrary.costVerifier.getColumnHeader(),
+                VerifierLibrary.quanityPerVerifier.getColumnHeader(),
+                VerifierLibrary.costVerifier.getColumnHeader()
         };
         bomChildGrid = new BomChildGrid(columnNames, this  );
         bomChildTable = new JTable(bomChildGrid);
@@ -220,7 +251,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
                 if (errorText.hasNoError()) {
                     ScreenStateService.evaluate(new NextAction(
-                            "Added Item " + itemAddRequest.getSummaryId(), ScreenTransitionType.REPLACE, responsePackage));
+                            "Added Item " + itemAddRequest.getSummaryId(), POP, responsePackage));
                 }
             }
         });
@@ -230,7 +261,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ScreenStateService.evaluate(new NextAction(
-                        "Operation cancelled", ScreenTransitionType.POP));
+                        "Operation cancelled", POP));
             }
         });
 
@@ -271,6 +302,7 @@ public class ItemPropertiesWithBom extends InmanPanel {
         bomChildTable.setFillsViewportHeight(false);
         bomChildTable.setVisible(true);
 
+
     }
 
 
@@ -287,10 +319,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
         //  Multiple messages will likely be implemented as verification is extended to all fields.
         StringBuilder errorMessages = new StringBuilder();
 
-        summaryIdVerifier.validateValueDomain(errorMessages, itemAddRequest.getSummaryId());
-        descriptionVerifier.validateValueDomain(errorMessages, itemAddRequest.getDescription());
-        costVerifier.validateValueDomain(errorMessages, itemAddRequest.getUnitCost());
-        sourcingVerifier.validateValueDomain(errorMessages, itemAddRequest.getSourcing());
+        VerifierLibrary.summaryIdVerifier.validateValueDomain(errorMessages, itemAddRequest.getSummaryId());
+        VerifierLibrary.descriptionVerifier.validateValueDomain(errorMessages, itemAddRequest.getDescription());
+        VerifierLibrary.costVerifier.validateValueDomain(errorMessages, itemAddRequest.getUnitCost());
+        VerifierLibrary.sourcing.validateValueDomain(errorMessages, itemAddRequest.getSourcing());
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
     }
@@ -307,10 +339,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
         //  Multiple messages will likely be implemented as verification is extended to all fields.
         StringBuilder errorMessages = new StringBuilder();
 
-        summaryIdVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getSummaryId());
-        descriptionVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getDescription());
-        costVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getUnitCost());
-        sourcingVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getSourcing());
+        VerifierLibrary.summaryIdVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getSummaryId());
+        VerifierLibrary.descriptionVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getDescription());
+        VerifierLibrary.costVerifier.validateValueDomain(errorMessages, xItemUpdateRequest.getUnitCost());
+        VerifierLibrary.sourcing.validateValueDomain(errorMessages, xItemUpdateRequest.getSourcing());
 
 
         return errorMessages.toString().length() == 0 ? Optional.empty() : Optional.of(errorMessages.toString());
@@ -322,6 +354,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
         this.summaryId.setText(SummaryIdVerifier.defaultValue);
         this.unitCost.setText(Double.toString(CostVerifier.defaultValue));
         this.sourcing.setSelectedIndex(0);
+        this.maxDepth.setText( MaxDepthVerifier.defaultValue );
+        this.maxDepth.setEditable( false );
     }
 
     @Override
@@ -331,7 +365,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
         switch (xAction.getScreenMode()) {
             case ADD:
                 setDefaultValues();
-                clearButton.setText("Clear");
                 title.setText("Add Item");
                 saveButton.setVisible(true);
                 updateButton.setVisible(false);
@@ -339,7 +372,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
             case CHANGE:
                 setValuesFromAction();
-                clearButton.setText("Undo");
                 title.setText("Change Item Properties");
 
                 try {
@@ -378,8 +410,10 @@ public class ItemPropertiesWithBom extends InmanPanel {
             summaryId.setText(itemToBeModified.getSummaryId());
             description.setText(itemToBeModified.getDescription());
             unitCost.setText(Double.toString(itemToBeModified.getUnitCost()));
-            for (int i = 0; i < sourcingVerifier.getValidationRules().values.length; i++) {
-                if (itemToBeModified.getSourcing().equals(sourcingVerifier.getValidationRules().values[i])) {
+            maxDepth.setText( Integer.toString( itemToBeModified.getMaxDepth() ));
+            maxDepth.setEditable( false );
+            for (int i = 0; i < VerifierLibrary.sourcing.getValidationRules().values.length; i++) {
+                if (itemToBeModified.getSourcing().equals( VerifierLibrary.sourcing.getValidationRules().values[i])) {
                     sourcing.setSelectedIndex(i);
                     break;
                 }

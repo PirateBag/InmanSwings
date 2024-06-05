@@ -2,8 +2,8 @@ package Forms;
 
 import Application.*;
 import Buttons.AddButton;
-import Buttons.EditLargeButton;
-import Buttons.ExitLargeButton;
+import Buttons.DoneButton;
+import Buttons.EditButton;
 import Buttons.SearchButton;
 import Verifiers.*;
 import com.inman.business.QueryParameterException;
@@ -40,6 +40,9 @@ public class ItemQuery extends InmanPanel {
         JLabel errorMessage = Utility.createErrorMessage(JLabel.TRAILING);
         add(errorMessage);
 
+        add( Utility.labelMaker(" ", JLabel.TRAILING),
+                BorderLayout.LINE_START);
+
         JTextField itemId = Utility.createTextField("Item Id");
         add(itemId);
 
@@ -58,13 +61,13 @@ public class ItemQuery extends InmanPanel {
         var searchButton = new SearchButton();
         buttonPanel.add(searchButton);
 
-        var exitButton = new ExitLargeButton( );
+        var exitButton = new DoneButton( );
         buttonPanel.add(exitButton);
 
         var addButton = new AddButton();
         buttonPanel.add(addButton);
 
-        var editButton = new EditLargeButton();
+        var editButton = new EditButton();
         buttonPanel.add(editButton);
         add(buttonPanel);
 
@@ -83,7 +86,7 @@ public class ItemQuery extends InmanPanel {
         queryResults.setFillsViewportHeight(true);
         add(new JScrollPane(queryResults));
 
-        searchButton.addActionListener(new ActionListener() {
+       searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -124,6 +127,7 @@ public class ItemQuery extends InmanPanel {
 
                 if (numberOfRows.length != 1) {
                     errorMessage.setText("Please select exactly one row for editing");
+                    errorMessage.setVisible( true );
                     return;
                 }
 
@@ -194,7 +198,4 @@ public class ItemQuery extends InmanPanel {
         responsePackage = new ItemResponse( responsePackage.mergeAnotherResponse( xAction.getResponsePackage()  ) );
         createTableModelFromResponsePackage();
     }
-
-
-
 }

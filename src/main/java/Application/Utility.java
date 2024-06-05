@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Utility {
-	static final Font titleFont = new Font("Arial", Font.PLAIN, 30); 
-	static final Font labelFont = new Font("Arial", Font.PLAIN, 8);
+	public static final Font titleFont = new Font("Arial", Font.PLAIN, 30);
+	public static final Font labelFont = new Font("Arial", Font.PLAIN, 8);
     public static final Border blackLine = BorderFactory.createLineBorder(Color.black);
-    static final Font textFont = new Font("Arial", Font.PLAIN, 12);
+    public static final Font textFont = new Font("Arial", Font.PLAIN, 12);
 	
 	public static JLabel titleMaker(String xContent ) {
 		var label = new JLabel( xContent  ); 

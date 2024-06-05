@@ -8,6 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Driver {
+	public static JTextArea MenuBar =  new JTextArea("MenuBar");
 
 	public void go() {
 		//Create and set up the window.
@@ -24,15 +25,10 @@ public class Driver {
 					java.awt.ComponentOrientation.RIGHT_TO_LEFT);
 		}
 
-		JButton button = new JButton("Welcome to Inman");
-		pane.add(button, BorderLayout.PAGE_START);
-
-		button = new JButton("MenuBar");
-		button.setPreferredSize(new Dimension(100,600));  
-		pane.add( button, BorderLayout.LINE_START );
-
+		MenuBar.setPreferredSize(new Dimension(150,600));
+		pane.add( MenuBar, BorderLayout.LINE_START );
 		ScreenStateService.primaryPanel = pane;
-		button = new JButton("Notifications" );
+		JButton button = new JButton("Notifications" );
 		button.setPreferredSize( new Dimension( 800,25 ));
 		pane.add(button, BorderLayout.PAGE_END );
 		ScreenStateService.setNotifications( button );

@@ -16,8 +16,7 @@ public class BomChildGrid extends AbstractTableModel {
     private String[] columnNames;
     private Object[][] data;
 
-    private final ItemPropertiesWithBom itemPropertiesWithBom;
-
+    public final ItemPropertiesWithBom itemPropertiesWithBom;
 
 
     public BomChildGrid(String [] xColumnNames, ItemPropertiesWithBom xItemPropertiesWithBom ) {
@@ -53,8 +52,11 @@ public class BomChildGrid extends AbstractTableModel {
         return data[row][col];
     }
 
-    public Class getColumnClass(int c) {
-        return getValueAt(0, c).getClass();
+    public Class getColumnClass(int column) {
+           if ( getValueAt( 0, column ) == null ) {
+            logger.error( "getColumnClass:  Column " + column + " is null" );
+        }
+        return getValueAt(0, column ).getClass();
     }
 
     /*
@@ -116,7 +118,7 @@ public class BomChildGrid extends AbstractTableModel {
     }
 
     public BomPresent getWhileRowAt( int row ) {
-        var bom = new BomPresent( this.itemPropertiesWithBom.componentResponse.getData()[ row ] );
+        var bom = new BomPresent();
 
         bom.setChildId( (Long) data[ row ][ 0 ]) ;
         bom.setChildSummary( data[ row ][ 1 ] );

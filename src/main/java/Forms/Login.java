@@ -13,6 +13,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import static Application.ScreenTransitionType.PUSH;
+
 public class Login extends InmanPanel {
 
     public Login() {
@@ -59,10 +61,8 @@ public class Login extends InmanPanel {
                 if (verifyCredentialsResponse.getStatus().equals(StatusResponse.INMAN_OK)) {
                     User user = new User();
                     user.setUserName(username.getText());
-                    /*ScreenStateService.evaluate(
-                            new Action("itemQuery", ScreenTransitionType.REPLACE, FormsLibrary.getItemQuery())); */
-                    ScreenStateService.evaluate(
-                            new NextAction("itemQuery", ScreenTransitionType.REPLACE, ItemQuery.class ));
+                   ScreenStateService.evaluate(
+                            new NextAction("itemQuery", PUSH, ItemQuery.class ));
                 } else {
                     Utility.setErrorMessage(errorMessage, verifyCredentialsResponse.getMessage());
                 }

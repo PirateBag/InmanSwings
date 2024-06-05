@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -60,6 +61,18 @@ public class ScreenStateService {
 		currentPanel = (InmanPanel) xNew;
 		currentPanel.setVisible( true );
 	}
+
+	public static String getStack() {
+		if (jPanelStack.isEmpty()) {
+			return "The stack is empty";
+		}
+		StringBuilder rValue = new StringBuilder( );
+		Iterator<InmanPanel> inmanPanelIterator = jPanelStack.elements().asIterator();
+		while ( inmanPanelIterator.hasNext() ) {
+			rValue.append("   " + inmanPanelIterator.next().getClass().getName().replace( "Forms.", "" ) + "\n");
+		}
+        return rValue.toString();
+	}
 	
 	public static void evaluate( NextAction xAction  ) {
 
@@ -86,7 +99,9 @@ public class ScreenStateService {
 		default:
 			break;
 		}
-		
+		//  logger.info( getStack() );
+		Driver.MenuBar.setText( getStack() );
+
 		currentPanel.invalidate();
 		currentPanel.repaint();
 
