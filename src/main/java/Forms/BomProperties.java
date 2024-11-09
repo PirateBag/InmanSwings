@@ -5,10 +5,14 @@ import Buttons.ClearButton;
 import Buttons.DoneButton;
 import ISwing.IComboBox;
 import Verifiers.VerifierLibrary;
+import com.inman.entity.ActivityState;
 import com.inman.entity.BomPresent;
 import com.inman.lists.Items;
+import com.inman.model.request.BomUpdate;
+import com.inman.model.response.BomResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,8 +23,8 @@ import java.util.Optional;
 
 public class BomProperties extends InmanPanel {
     static Logger logger = LoggerFactory.getLogger( "controller: " + BomProperties.class.getName() );
-   BomPresent bomPresent= new BomPresent();
-    Items itemPickList = new Items ();
+    Items itemPickList = new Items();
+    BomPresent bom = new BomPresent();
 
     protected JLabel title = Utility.titleMaker("Where Used Properties ");
 
@@ -33,10 +37,28 @@ public class BomProperties extends InmanPanel {
 
     JButton saveButton = new DoneButton();
     JButton doneButton = new DoneButton();
+    RestTemplate restTemplate = new RestTemplate();
 
     private class DoneButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+
+            //  bom.setParentId( parentDescription.getSelectedIndex() );
+            var selectedIndex = childDescription.getSelectedIndex() +1;
+            bom.setChildId( selectedIndex );
+            bom.setQuantityPer( Double.parseDouble( quantityPer.getText() ) );
+            BomPresent [] componentsToBeUpdated = new BomPresent[1];
+            bom.setActivityState( ActivityState.INSERT );
+            componentsToBeUpdated[0] = bom;
+            errorText.clearError();
+            try {
+            var completeUrl = "http://localhost:8080/" + BomUpdate.updateUrl;
+            var componentResponse = restTemplate.postForObject(completeUrl, componentsToBeUpdated, BomResponse.class);
+
+        } catch (Exception e1) {
+            errorText.signalError(e1.toString());
+        }
+
             ScreenStateService.evaluate(new NextAction(
                     "Return",
                     ScreenTransitionType.POP,
@@ -79,20 +101,20 @@ public class BomProperties extends InmanPanel {
 
     public void updateStateWhenOpeningNewChild(NextAction action ) {
         itemPickList.refreshFromServer();
-        bomPresent = (BomPresent) action.getResponsePackage().getData()[ 0 ];
+        bom  = (BomPresent) action.getResponsePackage().getData()[ 0 ];
         bomPresentToFields();
        }
 
     private void bomPresentToFields() {
         int index ;
         parentDescription.refresh( itemPickList );
-        index = itemPickList.getIndexByid( bomPresent.getParentId() );
-        parentDescription.setSelectedIndex( index ) );
+        index = itemPickList.getIndexByid( bom.getParentId() );
+        parentDescription.setSelectedIndex( index );
         childDescription.refresh( itemPickList );
-        index = itemPickList.getIndexByid( bomPresent.getChildId() );
-        childDescription.setSelectedIndex( index )itemPickList.getIndexByid( bomPresent.getChildId() ))==-1 ? 0 : index   );;
-        logger.info( "indexOfChildId is " + index );
-        quantityPer.setText(String.valueOf( bomPresent.getQuantityPer()));
+        int selectedIndex = index == -1 ? 0 : index;
+        childDescription.setSelectedIndex( selectedIndex );
+        logger.info( "indexOfChildId is " + selectedIndex );
+        quantityPer.setText(String.valueOf( bom.getQuantityPer()));
         errorText.clearError();
         this.invalidate();
     }
