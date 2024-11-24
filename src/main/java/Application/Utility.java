@@ -16,6 +16,7 @@ public class Utility {
 	public static final Font labelFont = new Font("Arial", Font.PLAIN, 8);
     public static final Border blackLine = BorderFactory.createLineBorder(Color.black);
     public static final Font textFont = new Font("Arial", Font.PLAIN, 12);
+	public static final Font monoFont = new Font(Font.MONOSPACED, Font.PLAIN, 12);
 	
 	public static JLabel titleMaker(String xContent ) {
 		var label = new JLabel( xContent  ); 

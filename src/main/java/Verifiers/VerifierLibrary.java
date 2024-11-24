@@ -11,6 +11,7 @@ public class VerifierLibrary {
     static public ChildIdVerifier childIdVerifier = new ChildIdVerifier();
     static public QuanityPerVerifier quanityPerVerifier = new QuanityPerVerifier();
     static public Sourcing sourcing = new Sourcing();
+    static public TextMessage textVerifier = new TextMessage();
 }
 
 

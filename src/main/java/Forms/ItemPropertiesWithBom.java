@@ -2,13 +2,16 @@ package Forms;
 
 import Application.*;
 import Buttons.AddButton;
+import Buttons.ReportButton;
 import Verifiers.*;
 import com.inman.entity.ActivityState;
 import com.inman.entity.BomPresent;
 import com.inman.entity.Item;
 import com.inman.model.request.BomSearchRequest;
 import com.inman.model.request.BomUpdate;
+import com.inman.model.request.ItemReportRequest;
 import com.inman.model.response.BomResponse;
+import com.inman.model.response.ItemExplosionResponse;
 import com.inman.model.response.ItemResponse;
 import com.inman.model.response.ResponsePackage;
 import com.inman.model.rest.ErrorLine;
@@ -22,12 +25,41 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Optional;
 
 import static Application.ScreenTransitionType.POP;
 
 public class ItemPropertiesWithBom extends InmanPanel {
+    private class ItemExplosionActionListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ItemExplosionResponse responsePackage = null;
+
+            var itemReportRequest = new ItemReportRequest(  Long.parseLong(id.getText() ) );
+
+            try {
+                errorText.clearError();
+                String completeUrl = "http://localhost:8080/" + ItemReportRequest.EXPLOSION_URL;
+                RestTemplate restTemplate = new RestTemplate();
+                responsePackage = restTemplate.postForObject(completeUrl, itemReportRequest, ItemExplosionResponse.class);
+            } catch (Exception e1) {
+                errorText.signalError(e1.toString());
+            }
+
+            if (responsePackage != null && responsePackage.getErrors().size() > 0) {
+                errorText.signalError(( responsePackage.getErrors().get(0)).getMessage());
+            }
+            ScreenStateService.evaluate(new NextAction(
+                    "Show Report Results",
+                    ScreenTransitionType.PUSH,
+                    TextResults.class,
+                    responsePackage,
+                    null,
+                    ScreenMode.DISPLAY));
+        }
+    }
+
+
     protected JLabel title = Utility.titleMaker("Add Item ");
     JTextField id = Utility.createTextField("Id");
     JTextField summaryId = Utility.createTextField("Summary Id");
@@ -52,6 +84,9 @@ public class ItemPropertiesWithBom extends InmanPanel {
 
     JButton addButton = new AddButton( );
 
+    JButton itemExplosionButton = new ReportButton( "Item Explosion",
+            new ItemExplosionActionListener() );
+
     JLabel componentsHeader;
     BomChildGrid bomChildGrid;
     NextAction action;
@@ -59,27 +94,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
     BomResponse componentResponse = null;
     JTable bomChildTable;
 
-    private class oldAddButtonActionListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            BomPresent[] extendedArray = Arrays.copyOf( componentResponse.getData(), componentResponse.getData().length+1  );
-            componentResponse.setData( extendedArray );
-            int positionOfNewItem = componentResponse.getData().length -1;
-
-            BomPresent emptyNewElement = new BomPresent();
-            emptyNewElement.setChildId( 999 );
-            emptyNewElement.setQuantityPer( 1.0 );
-            emptyNewElement.setChildDescription( "No child selected" );
-            emptyNewElement.setChildSummary( "No child selected");
-            emptyNewElement.setParentId(   Long.parseLong(id.getText()));
-            emptyNewElement.setUnitCost( 0.0 );
-            emptyNewElement.setActivityState( ActivityState.INSERT );
-            componentResponse.getData()[ positionOfNewItem ] = emptyNewElement;
-            bomChildGrid.initializeRows(componentResponse.getData());
-            showComponents();
-        }
-    }
 
     private class AddButtonActionListener implements ActionListener {
         @Override
@@ -144,15 +158,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
             if (responsePackage != null && responsePackage.getErrors().size() > 0) {
                 errorText.signalError(( responsePackage.getErrors().get(0)).getMessage());
             }
-            /*
-            if (errorText.hasNoError()) {
-                ScreenStateService.evaluate(new NextAction(
-                        "Updated Item" + itemUpdateRequest.getSummaryId(),
-                         ScreenTransitionType.REPLACE, responsePackage));
-
-            }
-
-             */
         }
     }
 
@@ -198,6 +203,8 @@ public class ItemPropertiesWithBom extends InmanPanel {
         buttonPanel.add(clearButton);
         buttonPanel.add( updateButton );
         buttonPanel.add(addButton);
+        buttonPanel.add( itemExplosionButton );
+
         add(buttonPanel);
 
 
@@ -301,8 +308,6 @@ public class ItemPropertiesWithBom extends InmanPanel {
         componentsHeader.setText( "Components of Item.");
         bomChildTable.setFillsViewportHeight(false);
         bomChildTable.setVisible(true);
-
-
     }
 
 
