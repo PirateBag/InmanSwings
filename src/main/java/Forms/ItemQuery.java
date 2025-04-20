@@ -2,7 +2,7 @@ package Forms;
 
 import Application.*;
 import Buttons.AddButton;
-import Buttons.DoneButton;
+import Buttons.PopWithoutActionButton;
 import Buttons.EditButton;
 import Buttons.SearchButton;
 import Verifiers.*;
@@ -29,18 +29,17 @@ public class ItemQuery extends InmanPanel {
     DescriptionVerifier descriptionVerifier = new DescriptionVerifier();
     CostVerifier costVerifier = new CostVerifier();
     Sourcing sourcingVerifier = new Sourcing();
+    JLabel errorMessage = Utility.createErrorMessage(JLabel.TRAILING);
 
     public ItemQuery() {
-        responsePackage.setData( new Item[ 0 ]);
+        responsePackage.setData(new Item[0]);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(Utility.titleMaker("Search Parameters"), BorderLayout.PAGE_START);
         add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
 
-        JLabel errorMessage = Utility.createErrorMessage(JLabel.TRAILING);
         add(errorMessage);
-
-        add( Utility.labelMaker(" ", JLabel.TRAILING),
+        add(Utility.labelMaker(" ", JLabel.TRAILING),
                 BorderLayout.LINE_START);
 
         JTextField itemId = Utility.createTextField("Item Id");
@@ -61,7 +60,7 @@ public class ItemQuery extends InmanPanel {
         var searchButton = new SearchButton();
         buttonPanel.add(searchButton);
 
-        var exitButton = new DoneButton( );
+        var exitButton = new PopWithoutActionButton();
         buttonPanel.add(exitButton);
 
         var addButton = new AddButton();
@@ -79,14 +78,14 @@ public class ItemQuery extends InmanPanel {
                 summaryIdVerifier.getColumnHeader(),
                 descriptionVerifier.getColumnHeader(),
                 costVerifier.getColumnHeader(),
-                sourcingVerifier.getColumnHeader() } ;
+                sourcingVerifier.getColumnHeader()};
         for (String columnName : columnNames) {
             tableModel.addColumn(columnName);
         }
         queryResults.setFillsViewportHeight(true);
         add(new JScrollPane(queryResults));
 
-       searchButton.addActionListener(new ActionListener() {
+        searchButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -95,9 +94,7 @@ public class ItemQuery extends InmanPanel {
 
                     String completeUrl = "http://localhost:8080/" + SearchItemRequest.queryUrl;
                     RestTemplate restTemplate = new RestTemplate();
-                    String responseJson = restTemplate.postForObject(completeUrl, searchItemRequest, String.class);
                     responsePackage = restTemplate.postForObject(completeUrl, searchItemRequest, ItemResponse.class);
-
                     errorMessage.setText("");
 
                     createTableModelFromResponsePackage();
@@ -127,7 +124,7 @@ public class ItemQuery extends InmanPanel {
 
                 if (numberOfRows.length != 1) {
                     errorMessage.setText("Please select exactly one row for editing");
-                    errorMessage.setVisible( true );
+                    errorMessage.setVisible(true);
                     return;
                 }
 
@@ -152,16 +149,20 @@ public class ItemQuery extends InmanPanel {
             }
 
             @Override
-            public void mouseReleased(MouseEvent e) { }
+            public void mouseReleased(MouseEvent e) {
+            }
 
             @Override
-            public void mouseEntered(MouseEvent e) {  }
+            public void mouseEntered(MouseEvent e) {
+            }
 
             @Override
-            public void mouseExited(MouseEvent e) {  }
+            public void mouseExited(MouseEvent e) {
+            }
 
             @Override
-            public void mouseClicked(MouseEvent e) { }
+            public void mouseClicked(MouseEvent e) {
+            }
 
         });
 
@@ -178,7 +179,7 @@ public class ItemQuery extends InmanPanel {
 
         for (int row = 0; row < numRows; row++) {
             var item = (Item) responsePackage.getData()[row];
-            tableModel.insertRow(row, new Object[]{item.getId(), item.getSummaryId(), item.getDescription(), item.getUnitCost(), item.getSourcing() });
+            tableModel.insertRow(row, new Object[]{item.getId(), item.getSummaryId(), item.getDescription(), item.getUnitCost(), item.getSourcing()});
         }
     }
 
@@ -191,11 +192,31 @@ public class ItemQuery extends InmanPanel {
      */
     public void updateStateWhenChildCloses(NextAction xAction) {
         /*  No response package may mean the cancel button was pushed.  */
-        if (xAction.getResponsePackage() == null) { return; }
+        if (xAction.getResponsePackage() == null) {
+            return;
+        }
 
         /*  In the future, we may find that we can get multiple updates.  */
         assert (1 != xAction.getResponsePackage().getData().length);
-        responsePackage = new ItemResponse( responsePackage.mergeAnotherResponse( xAction.getResponsePackage()  ) );
+        responsePackage = new ItemResponse(responsePackage.mergeAnotherResponse(xAction.getResponsePackage()));
         createTableModelFromResponsePackage();
     }
+
+    @Override
+    public void updateStateWhenOpeningNewChild(NextAction xAction) {
+             SearchItemRequest searchItemRequest = new SearchItemRequest("", "", "");
+            executeQuery( searchItemRequest );
+    }
+
+    private void executeQuery( SearchItemRequest searchItemRequest ) {
+        try {
+        String completeUrl = "http://localhost:8080/" + SearchItemRequest.queryUrl;
+        RestTemplate restTemplate = new RestTemplate();
+        responsePackage = restTemplate.postForObject(completeUrl, searchItemRequest, ItemResponse.class);
+        createTableModelFromResponsePackage();
+        } catch (Exception e1) {
+        errorMessage.setText(e1.getMessage());
+        }
+    }
 }
+

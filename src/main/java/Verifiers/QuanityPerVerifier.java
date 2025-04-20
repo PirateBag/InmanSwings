@@ -17,6 +17,13 @@ public class QuanityPerVerifier extends DomainVerifier {
 	}
 
 	@Override
+	public JTextField getJTextField() {
+		JTextField newTextField = super.getJTextField();
+		newTextField.setText( Double.toString( defaultValue ) );
+		return newTextField;
+	}
+
+	@Override
 	public boolean verify(JComponent input) {
 		ScreenStateService.getCurrentPanel().invalidate();
 		ScreenStateService.getCurrentPanel().repaint();

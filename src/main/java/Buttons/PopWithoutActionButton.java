@@ -8,7 +8,7 @@ import java.awt.event.ActionEvent;
 
 import static Application.ScreenTransitionType.POP;
 
-public class DoneButton extends JButton {
+public class PopWithoutActionButton extends JButton {
     Icon icon = new ImageIcon( "gui/icons/done_FILL0_wght400_GRAD0_opsz24.png" );
 
 
@@ -17,7 +17,7 @@ public class DoneButton extends JButton {
                     "Cancel and return.", POP));
         }
 
-    public DoneButton() {
+    public PopWithoutActionButton() {
         super();
         this.setIcon( icon );
         this.setDefaultCapable(false);

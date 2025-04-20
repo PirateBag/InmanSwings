@@ -3,7 +3,7 @@ package Forms;
 import Application.InmanPanel;
 import Application.NextAction;
 import Application.Utility;
-import Buttons.DoneButton;
+import Buttons.PopWithoutActionButton;
 import Verifiers.VerifierLibrary;
 import com.inman.entity.Text;
 import com.inman.model.response.ItemExplosionResponse;
@@ -55,7 +55,7 @@ public class TextResults extends InmanPanel {
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-        buttonPanel.add( new DoneButton() );
+        buttonPanel.add( new PopWithoutActionButton() );
         add( buttonPanel );
 
         add( (reportLabel = Utility.labelMaker(" ", JLabel.TRAILING) ),

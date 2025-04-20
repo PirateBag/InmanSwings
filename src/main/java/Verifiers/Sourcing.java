@@ -1,6 +1,7 @@
 package Verifiers;
 
 import Application.ScreenStateService;
+import Application.Utility;
 import com.inman.entity.Item;
 
 import javax.swing.*;
@@ -14,6 +15,21 @@ public class Sourcing extends DomainVerifier {
 		columnHeader = "Src";
 		rowHeader = "Sourcing";
 	}
+
+	@Override
+	public JTextField getJTextField() {
+		JTextField newTextField = super.getJTextField();
+		newTextField.setText(  defaultValue );
+		return newTextField;
+	}
+
+	public JComboBox<String> getJComboBox() {
+		JComboBox rValue = Utility.createCombobox( this );
+		JTextField newTextField = super.getJTextField();
+		newTextField.setText(  defaultValue );
+		return rValue;
+	}
+
 
 	@Override
 	public boolean verify(JComponent input) {

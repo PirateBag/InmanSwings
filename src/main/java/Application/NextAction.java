@@ -19,10 +19,6 @@ public class NextAction {
 		return actionName;
 	}
 
-	public void setActionName(String actionName) {
-		this.actionName = actionName;
-	}
-
 	public ScreenTransitionType getScreenTransitionType() {
 		return screenTransitionType;
 	}
